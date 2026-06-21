@@ -14,7 +14,141 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      machine_models: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      machine_process_templates: {
+        Row: {
+          id: string
+          model_id: string
+          nome: string
+          ordem: number
+          peso: number
+        }
+        Insert: {
+          id?: string
+          model_id: string
+          nome: string
+          ordem?: number
+          peso: number
+        }
+        Update: {
+          id?: string
+          model_id?: string
+          nome?: string
+          ordem?: number
+          peso?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "machine_process_templates_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "machine_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      machine_processes: {
+        Row: {
+          concluido: boolean
+          concluido_em: string | null
+          id: string
+          machine_id: string
+          nome: string
+          ordem: number
+          peso: number
+        }
+        Insert: {
+          concluido?: boolean
+          concluido_em?: string | null
+          id?: string
+          machine_id: string
+          nome: string
+          ordem?: number
+          peso: number
+        }
+        Update: {
+          concluido?: boolean
+          concluido_em?: string | null
+          id?: string
+          machine_id?: string
+          nome?: string
+          ordem?: number
+          peso?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "machine_processes_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      machines: {
+        Row: {
+          cliente: string
+          created_at: string
+          data_entrega: string
+          id: string
+          modelo_id: string | null
+          modelo_nome: string | null
+          nome: string
+          numero_serie: string
+          progresso: number
+          status: Database["public"]["Enums"]["machine_status"]
+        }
+        Insert: {
+          cliente: string
+          created_at?: string
+          data_entrega: string
+          id?: string
+          modelo_id?: string | null
+          modelo_nome?: string | null
+          nome: string
+          numero_serie: string
+          progresso?: number
+          status?: Database["public"]["Enums"]["machine_status"]
+        }
+        Update: {
+          cliente?: string
+          created_at?: string
+          data_entrega?: string
+          id?: string
+          modelo_id?: string | null
+          modelo_nome?: string | null
+          nome?: string
+          numero_serie?: string
+          progresso?: number
+          status?: Database["public"]["Enums"]["machine_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "machines_modelo_id_fkey"
+            columns: ["modelo_id"]
+            isOneToOne: false
+            referencedRelation: "machine_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +157,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      machine_status:
+        | "engenharia"
+        | "compras"
+        | "producao"
+        | "embarque"
+        | "entregue"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +289,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      machine_status: [
+        "engenharia",
+        "compras",
+        "producao",
+        "embarque",
+        "entregue",
+      ],
+    },
   },
 } as const

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { ProgressBar } from "@/components/ProgressBar";
 import { Badge } from "@/components/ui/badge";
 import { STATUS_LABEL, statusClasses, progressColor, type MachineStatus } from "@/lib/status";
 import { Factory, Calendar, User, Hash, AlertTriangle } from "lucide-react";
@@ -112,11 +112,7 @@ function Dashboard() {
                         <span className="text-muted-foreground">Progresso</span>
                         <span className="font-semibold">{progresso}%</span>
                       </div>
-                      <Progress
-                        value={progresso}
-                        className="h-2 bg-secondary"
-                        indicatorClassName={progressColor(progresso, atrasado)}
-                      />
+                      <ProgressBar value={progresso} indicatorClassName={progressColor(progresso, atrasado)} />
                     </div>
                   </Card>
                 </Link>

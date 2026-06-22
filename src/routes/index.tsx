@@ -94,21 +94,22 @@ function Dashboard() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <Info icon={Hash} label="Série" value={m.numero_serie} />
+                      <Info icon={Hash} label="Nº de Série" value={m.numero_serie} />
                       <Info icon={User} label="Cliente" value={m.cliente} />
                       <Info
                         icon={Calendar}
                         label="Entrega"
-                        value={format(new Date(m.data_entrega), "dd/MM/yyyy")}
+                        value={format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
                         valueClass={atrasado ? "text-[color:var(--status-atrasado)]" : ""}
                       />
-                      <Info
-                        icon={AlertTriangle}
-                        label="Prazo"
-                        value={atrasado ? "Atrasada" : "No prazo"}
-                        valueClass={`font-semibold ${atrasado ? "text-[color:var(--status-atrasado)]" : "text-[color:var(--status-producao)]"}`}
-                      />
+                      <div className="flex items-start gap-2 min-w-0">
+                        <div className="min-w-0">
+                          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground font-medium">Prazo</div>
+                          <PrazoPill atrasado={atrasado} />
+                        </div>
+                      </div>
                     </div>
+
 
                     <div className="space-y-1.5 mt-auto">
                       <div className="flex justify-between text-xs">

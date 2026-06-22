@@ -71,6 +71,7 @@ export type Database = {
           id: string
           machine_id: string
           nome: string
+          observacao: string | null
           ordem: number
           peso: number
         }
@@ -80,6 +81,7 @@ export type Database = {
           id?: string
           machine_id: string
           nome: string
+          observacao?: string | null
           ordem?: number
           peso: number
         }
@@ -89,6 +91,7 @@ export type Database = {
           id?: string
           machine_id?: string
           nome?: string
+          observacao?: string | null
           ordem?: number
           peso?: number
         }

@@ -1,0 +1,1 @@
+ALTER TABLE public.machine_processes ADD COLUMN IF NOT EXISTS observacao text;

@@ -80,18 +80,18 @@ function Dashboard() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="size-10 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                        <div className="size-11 rounded-xl bg-secondary flex items-center justify-center shrink-0">
                           <Factory className="size-5 text-muted-foreground" />
                         </div>
                         <div className="min-w-0">
-                          <div className="font-semibold truncate">{m.nome}</div>
-                          <div className="text-xs text-muted-foreground truncate">{m.modelo_nome ?? "—"}</div>
+                          <div className="font-bold text-lg leading-tight truncate">{m.nome}</div>
+                          <div className="text-sm text-muted-foreground truncate mt-0.5">{m.modelo_nome ?? "—"}</div>
                         </div>
                       </div>
                       <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="grid grid-cols-2 gap-3">
                       <Info icon={Hash} label="Série" value={m.numero_serie} />
                       <Info icon={User} label="Cliente" value={m.cliente} />
                       <Info
@@ -100,7 +100,12 @@ function Dashboard() {
                         value={format(new Date(m.data_entrega), "dd/MM/yyyy")}
                         valueClass={atrasado ? "text-[color:var(--status-atrasado)]" : ""}
                       />
-                      <Info icon={AlertTriangle} label={atrasado ? "Atrasada" : "No prazo"} value="" valueClass={atrasado ? "text-[color:var(--status-atrasado)]" : "text-muted-foreground"} />
+                      <Info
+                        icon={AlertTriangle}
+                        label="Prazo"
+                        value={atrasado ? "Atrasada" : "No prazo"}
+                        valueClass={`font-semibold ${atrasado ? "text-[color:var(--status-atrasado)]" : "text-[color:var(--status-producao)]"}`}
+                      />
                     </div>
 
                     <div className="space-y-1.5 mt-auto">
@@ -137,11 +142,11 @@ function StatCard({ label, value, status }: { label: string; value: string | num
 
 function Info({ icon: Icon, label, value, valueClass = "" }: { icon: any; label: string; value: string; valueClass?: string }) {
   return (
-    <div className="flex items-center gap-2 min-w-0">
-      <Icon className="size-3.5 text-muted-foreground shrink-0" />
+    <div className="flex items-start gap-2 min-w-0">
+      <Icon className="size-3.5 text-muted-foreground shrink-0 mt-1" />
       <div className="min-w-0">
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-        {value && <div className={`truncate ${valueClass}`}>{value}</div>}
+        <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground font-medium">{label}</div>
+        {value && <div className={`text-sm font-medium truncate mt-0.5 ${valueClass}`}>{value}</div>}
       </div>
     </div>
   );

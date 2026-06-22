@@ -143,6 +143,23 @@ function StatCard({ label, value, status }: { label: string; value: string | num
   );
 }
 
+function PrazoPill({ atrasado }: { atrasado: boolean }) {
+  if (atrasado) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 mt-1 text-xs font-semibold bg-[color:var(--status-atrasado)]/15 text-[color:var(--status-atrasado)] ring-1 ring-[color:var(--status-atrasado)]/40">
+        <AlertTriangle className="size-3.5" />
+        Atrasada
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 mt-1 text-xs font-semibold bg-[color:var(--status-producao)]/15 text-[color:var(--status-producao)] ring-1 ring-[color:var(--status-producao)]/40">
+      <CheckCircle2 className="size-3.5" />
+      No prazo
+    </span>
+  );
+}
+
 function Info({ icon: Icon, label, value, valueClass = "" }: { icon: any; label: string; value: string; valueClass?: string }) {
   return (
     <div className="flex items-start gap-2 min-w-0">

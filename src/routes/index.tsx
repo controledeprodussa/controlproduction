@@ -143,6 +143,56 @@ function Dashboard() {
   );
 }
 
+function MachineCard({ m }: { m: Machine }) {
+  const atrasado = isAtrasado(m);
+  const progresso = Math.round(Number(m.progresso));
+  return (
+    <Card
+      className={`p-5 rounded-2xl bg-card hover:bg-accent/40 transition-all hover:-translate-y-0.5 hover:shadow-xl border ${
+        atrasado ? "border-[color:var(--status-atrasado)]/40" : "border-border"
+      } cursor-pointer h-full flex flex-col gap-4`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="size-11 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+            <Factory className="size-5 text-muted-foreground" />
+          </div>
+          <div className="min-w-0">
+            <div className="font-bold text-lg leading-tight truncate">{m.nome}</div>
+            <div className="text-sm text-muted-foreground truncate mt-0.5">{m.modelo_nome ?? "—"}</div>
+          </div>
+        </div>
+        <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Info icon={Hash} label="Nº de Série" value={m.numero_serie} />
+        <Info icon={User} label="Cliente" value={m.cliente} />
+        <Info
+          icon={Calendar}
+          label="Entrega"
+          value={format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
+          valueClass={atrasado ? "text-[color:var(--status-atrasado)]" : ""}
+        />
+        <div className="flex items-start gap-2 min-w-0">
+          <div className="min-w-0">
+            <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground font-medium">Prazo</div>
+            <PrazoPill atrasado={atrasado} />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-1.5 mt-auto">
+        <div className="flex justify-between text-xs">
+          <span className="text-muted-foreground">Progresso</span>
+          <span className="font-semibold">{progresso}%</span>
+        </div>
+        <ProgressBar value={progresso} indicatorClassName={progressColor(progresso, atrasado)} />
+      </div>
+    </Card>
+  );
+}
+
 function StatCard({ label, value, status }: { label: string; value: string | number; status?: MachineStatus }) {
   return (
     <Card className="p-5 rounded-2xl border border-border bg-card">

@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProgressBar } from "@/components/ProgressBar";
-import { STATUS_LABEL, STATUS_ORDER, statusClasses, progressColor, type MachineStatus } from "@/lib/status";
+import { STATUS_LABEL, STATUS_ORDER, statusClasses, progressColor, parseLocalDate, type MachineStatus } from "@/lib/status";
 import { ArrowLeft, Calendar, User, Hash, Factory, Pencil, ChevronDown, MessageSquare } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -70,7 +70,8 @@ function MachineDetail() {
 
   if (!machine) return <div className="text-muted-foreground">Carregando…</div>;
 
-  const atrasado = machine.status !== "entregue" && new Date(machine.data_entrega) < new Date(new Date().toDateString());
+  const today = new Date(); today.setHours(0,0,0,0);
+  const atrasado = machine.status !== "entregue" && parseLocalDate(machine.data_entrega) < today;
   const progresso = Math.round(Number(machine.progresso));
 
   return (
@@ -112,7 +113,7 @@ function MachineDetail() {
           <InfoBlock
             icon={Calendar}
             label="Entrega"
-            value={format(new Date(machine.data_entrega), "dd/MM/yyyy")}
+            value={format(parseLocalDate(machine.data_entrega), "dd/MM/yyyy")}
             valueClass={atrasado ? "text-[color:var(--status-atrasado)]" : ""}
           />
           <div>

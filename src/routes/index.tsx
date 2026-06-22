@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Badge } from "@/components/ui/badge";
-import { STATUS_LABEL, statusClasses, progressColor, type MachineStatus } from "@/lib/status";
-import { Factory, Calendar, User, Hash, AlertTriangle } from "lucide-react";
+import { STATUS_LABEL, statusClasses, progressColor, parseLocalDate, type MachineStatus } from "@/lib/status";
+import { Factory, Calendar, User, Hash, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/")({
@@ -25,7 +25,9 @@ type Machine = {
 };
 
 function isAtrasado(m: Machine) {
-  return m.status !== "entregue" && new Date(m.data_entrega) < new Date(new Date().toDateString());
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return m.status !== "entregue" && parseLocalDate(m.data_entrega) < today;
 }
 
 function Dashboard() {
@@ -92,21 +94,22 @@ function Dashboard() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <Info icon={Hash} label="Série" value={m.numero_serie} />
+                      <Info icon={Hash} label="Nº de Série" value={m.numero_serie} />
                       <Info icon={User} label="Cliente" value={m.cliente} />
                       <Info
                         icon={Calendar}
                         label="Entrega"
-                        value={format(new Date(m.data_entrega), "dd/MM/yyyy")}
+                        value={format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
                         valueClass={atrasado ? "text-[color:var(--status-atrasado)]" : ""}
                       />
-                      <Info
-                        icon={AlertTriangle}
-                        label="Prazo"
-                        value={atrasado ? "Atrasada" : "No prazo"}
-                        valueClass={`font-semibold ${atrasado ? "text-[color:var(--status-atrasado)]" : "text-[color:var(--status-producao)]"}`}
-                      />
+                      <div className="flex items-start gap-2 min-w-0">
+                        <div className="min-w-0">
+                          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground font-medium">Prazo</div>
+                          <PrazoPill atrasado={atrasado} />
+                        </div>
+                      </div>
                     </div>
+
 
                     <div className="space-y-1.5 mt-auto">
                       <div className="flex justify-between text-xs">
@@ -137,6 +140,23 @@ function StatCard({ label, value, status }: { label: string; value: string | num
         {value}
       </div>
     </Card>
+  );
+}
+
+function PrazoPill({ atrasado }: { atrasado: boolean }) {
+  if (atrasado) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 mt-1 text-xs font-semibold bg-[color:var(--status-atrasado)]/15 text-[color:var(--status-atrasado)] ring-1 ring-[color:var(--status-atrasado)]/40">
+        <AlertTriangle className="size-3.5" />
+        Atrasada
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 mt-1 text-xs font-semibold bg-[color:var(--status-producao)]/15 text-[color:var(--status-producao)] ring-1 ring-[color:var(--status-producao)]/40">
+      <CheckCircle2 className="size-3.5" />
+      No prazo
+    </span>
   );
 }
 

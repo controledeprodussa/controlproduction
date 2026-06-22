@@ -25,7 +25,9 @@ type Machine = {
 };
 
 function isAtrasado(m: Machine) {
-  return m.status !== "entregue" && new Date(m.data_entrega) < new Date(new Date().toDateString());
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return m.status !== "entregue" && parseLocalDate(m.data_entrega) < today;
 }
 
 function Dashboard() {

@@ -48,11 +48,35 @@ function Dashboard() {
   const ativas = machines.filter((m) => m.status !== "entregue");
   const count = (s: MachineStatus) => machines.filter((m) => m.status === s).length;
 
+  const [fullscreen, setFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFullscreen(false);
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [fullscreen]);
+
   return (
     <div className="space-y-8">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">Visão geral</h1>
-        <p className="text-muted-foreground mt-1">Produção em tempo real</p>
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Visão geral</h1>
+          <p className="text-muted-foreground mt-1">Produção em tempo real</p>
+        </div>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setFullscreen(true)}
+          aria-label="Modo tela cheia"
+          title="Modo tela cheia"
+        >
+          <Maximize2 className="size-4" />
+        </Button>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -72,61 +96,49 @@ function Dashboard() {
           </Card>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {ativas.map((m) => {
-              const atrasado = isAtrasado(m);
-              const progresso = Math.round(Number(m.progresso));
-              return (
-                <Link key={m.id} to="/maquinas/$id" params={{ id: m.id }}>
-                  <Card
-                    className={`p-5 rounded-2xl bg-card hover:bg-accent/40 transition-all hover:-translate-y-0.5 hover:shadow-xl border ${
-                      atrasado ? "border-[color:var(--status-atrasado)]/40" : "border-border"
-                    } cursor-pointer h-full flex flex-col gap-4`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="size-11 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-                          <Factory className="size-5 text-muted-foreground" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="font-bold text-lg leading-tight truncate">{m.nome}</div>
-                          <div className="text-sm text-muted-foreground truncate mt-0.5">{m.modelo_nome ?? "—"}</div>
-                        </div>
-                      </div>
-                      <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <Info icon={Hash} label="Nº de Série" value={m.numero_serie} />
-                      <Info icon={User} label="Cliente" value={m.cliente} />
-                      <Info
-                        icon={Calendar}
-                        label="Entrega"
-                        value={format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
-                        valueClass={atrasado ? "text-[color:var(--status-atrasado)]" : ""}
-                      />
-                      <div className="flex items-start gap-2 min-w-0">
-                        <div className="min-w-0">
-                          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground font-medium">Prazo</div>
-                          <PrazoPill atrasado={atrasado} />
-                        </div>
-                      </div>
-                    </div>
-
-
-                    <div className="space-y-1.5 mt-auto">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">Progresso</span>
-                        <span className="font-semibold">{progresso}%</span>
-                      </div>
-                      <ProgressBar value={progresso} indicatorClassName={progressColor(progresso, atrasado)} />
-                    </div>
-                  </Card>
-                </Link>
-              );
-            })}
+            {ativas.map((m) => (
+              <Link key={m.id} to="/maquinas/$id" params={{ id: m.id }}>
+                <MachineCard m={m} />
+              </Link>
+            ))}
           </div>
         )}
       </section>
+
+      {fullscreen && (
+        <div className="fixed inset-0 z-50 bg-background overflow-auto">
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-6 md:px-10 py-5 bg-background/95 backdrop-blur border-b border-border">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Máquinas em produção</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {ativas.length} {ativas.length === 1 ? "máquina ativa" : "máquinas ativas"}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setFullscreen(false)}
+              aria-label="Voltar"
+              title="Voltar"
+            >
+              <ArrowLeft className="size-4" />
+            </Button>
+          </div>
+          <div className="p-6 md:p-10">
+            {ativas.length === 0 ? (
+              <Card className="p-10 text-center text-muted-foreground">
+                Nenhuma máquina em andamento.
+              </Card>
+            ) : (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
+                {ativas.map((m) => (
+                  <MachineCard key={m.id} m={m} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

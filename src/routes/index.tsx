@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Badge } from "@/components/ui/badge";
 import { STATUS_LABEL, statusClasses, progressColor, parseLocalDate, type MachineStatus } from "@/lib/status";
-import { Factory, Calendar, User, Hash, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Factory, Calendar, User, Hash, AlertTriangle, CheckCircle2, Maximize2, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/")({

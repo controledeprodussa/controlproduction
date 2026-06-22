@@ -41,12 +41,8 @@ function Dashboard() {
     },
   });
 
-  const emProducao = machines.filter((m) => m.status === "producao").length;
-  const entregues = machines.filter((m) => m.status === "entregue").length;
-  const atrasadas = machines.filter(isAtrasado).length;
-  const media = machines.length
-    ? Math.round(machines.reduce((s, m) => s + Number(m.progresso), 0) / machines.length)
-    : 0;
+  const ativas = machines.filter((m) => m.status !== "entregue");
+  const count = (s: MachineStatus) => machines.filter((m) => m.status === s).length;
 
   return (
     <div className="space-y-8">
@@ -56,23 +52,23 @@ function Dashboard() {
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Em Produção" value={emProducao} />
-        <StatCard label="Entregues" value={entregues} />
-        <StatCard label="Atrasadas" value={atrasadas} accent={atrasadas > 0 ? "danger" : undefined} />
-        <StatCard label="Produção Média" value={`${media}%`} />
+        <StatCard label="Engenharia" value={count("engenharia")} status="engenharia" />
+        <StatCard label="Compras" value={count("compras")} status="compras" />
+        <StatCard label="Produção" value={count("producao")} status="producao" />
+        <StatCard label="Embarque" value={count("embarque")} status="embarque" />
       </div>
 
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold">Máquinas</h2>
+        <h2 className="text-lg font-semibold">Máquinas em andamento</h2>
         {isLoading ? (
           <div className="text-muted-foreground">Carregando…</div>
-        ) : machines.length === 0 ? (
+        ) : ativas.length === 0 ? (
           <Card className="p-10 text-center text-muted-foreground">
-            Nenhuma máquina cadastrada ainda. Vá em <span className="text-foreground font-medium">Criar</span> para começar.
+            Nenhuma máquina em andamento. Vá em <span className="text-foreground font-medium">Criar</span> para começar.
           </Card>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {machines.map((m) => {
+            {ativas.map((m) => {
               const atrasado = isAtrasado(m);
               const progresso = Math.round(Number(m.progresso));
               return (
@@ -125,11 +121,14 @@ function Dashboard() {
   );
 }
 
-function StatCard({ label, value, accent }: { label: string; value: string | number; accent?: "danger" }) {
+function StatCard({ label, value, status }: { label: string; value: string | number; status?: MachineStatus }) {
   return (
     <Card className="p-5 rounded-2xl border border-border bg-card">
       <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={`mt-2 text-3xl font-bold ${accent === "danger" ? "text-[color:var(--status-atrasado)]" : ""}`}>
+      <div
+        className="mt-2 text-3xl font-bold"
+        style={status ? { color: `var(--status-${status})` } : undefined}
+      >
         {value}
       </div>
     </Card>

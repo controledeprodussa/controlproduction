@@ -1,13 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProgressBar } from "@/components/ProgressBar";
 import { STATUS_LABEL, STATUS_ORDER, statusClasses, progressColor, type MachineStatus } from "@/lib/status";
-import { ArrowLeft, Calendar, User, Hash, Factory } from "lucide-react";
+import { ArrowLeft, Calendar, User, Hash, Factory, Pencil, ChevronDown, MessageSquare } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -19,6 +25,7 @@ export const Route = createFileRoute("/maquinas/$id")({
 function MachineDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
+  const [editing, setEditing] = useState(false);
 
   const { data: machine } = useQuery({
     queryKey: ["machine", id],
@@ -79,7 +86,18 @@ function MachineDetail() {
               <Factory className="size-7 text-muted-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">{machine.nome}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-tight">{machine.nome}</h1>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-muted-foreground hover:text-foreground"
+                  onClick={() => setEditing(true)}
+                  aria-label="Editar máquina"
+                >
+                  <Pencil className="size-4" />
+                </Button>
+              </div>
               <p className="text-sm text-muted-foreground">{machine.modelo_nome ?? "—"}</p>
             </div>
           </div>
@@ -127,31 +145,143 @@ function MachineDetail() {
           <p className="text-sm text-muted-foreground">Marque os processos concluídos — o progresso atualiza automaticamente.</p>
         </div>
         <div className="space-y-2">
-          {processes.map((p) => (
-            <label
-              key={p.id}
-              className={`flex items-center gap-4 p-4 rounded-xl border border-border bg-secondary/40 hover:bg-secondary transition-colors cursor-pointer ${
-                p.concluido ? "opacity-70" : ""
-              }`}
-            >
-              <Checkbox checked={p.concluido} onCheckedChange={(v) => toggle(p.id, !!v)} />
-              <div className="flex-1 min-w-0">
-                <div className={`font-medium ${p.concluido ? "line-through text-muted-foreground" : ""}`}>{p.nome}</div>
-                {p.concluido && p.concluido_em && (
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    Concluído em {format(new Date(p.concluido_em), "dd/MM/yyyy HH:mm")}
-                  </div>
-                )}
-              </div>
-              <div className="text-sm font-semibold text-muted-foreground tabular-nums">{Number(p.peso)}%</div>
-            </label>
+          {processes.map((p: any) => (
+            <ProcessItem key={p.id} proc={p} onToggle={toggle} machineId={id} />
           ))}
           {processes.length === 0 && (
             <div className="text-sm text-muted-foreground p-6 text-center">Sem processos cadastrados.</div>
           )}
         </div>
       </Card>
+
+      <EditMachineDialog open={editing} onOpenChange={setEditing} machine={machine} />
     </div>
+  );
+}
+
+function ProcessItem({ proc, onToggle, machineId }: { proc: any; onToggle: (id: string, done: boolean) => void; machineId: string }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [obs, setObs] = useState(proc.observacao ?? "");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => { setObs(proc.observacao ?? ""); }, [proc.observacao]);
+
+  const saveObs = async () => {
+    setSaving(true);
+    const { error } = await supabase.from("machine_processes").update({ observacao: obs || null }).eq("id", proc.id);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Observação salva");
+    qc.invalidateQueries({ queryKey: ["processes", machineId] });
+  };
+
+  const hasObs = !!(proc.observacao && proc.observacao.trim());
+
+  return (
+    <div className={`rounded-xl border border-border bg-secondary/40 ${proc.concluido ? "opacity-80" : ""}`}>
+      <div className="flex items-center gap-4 p-4">
+        <Checkbox checked={proc.concluido} onCheckedChange={(v) => onToggle(proc.id, !!v)} />
+        <div className="flex-1 min-w-0">
+          <div className={`font-medium ${proc.concluido ? "line-through text-muted-foreground" : ""}`}>{proc.nome}</div>
+          {proc.concluido && proc.concluido_em && (
+            <div className="text-xs text-muted-foreground mt-0.5">
+              Concluído em {format(new Date(proc.concluido_em), "dd/MM/yyyy HH:mm")}
+            </div>
+          )}
+        </div>
+        <div className="text-sm font-semibold text-muted-foreground tabular-nums">{Number(proc.peso)}%</div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setOpen((o) => !o)}
+          className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <MessageSquare className={`size-3.5 ${hasObs ? "text-[color:var(--status-engenharia)]" : ""}`} />
+          Obs
+          <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+        </Button>
+      </div>
+      {open && (
+        <div className="px-4 pb-4 space-y-2">
+          <Textarea
+            value={obs}
+            onChange={(e) => setObs(e.target.value)}
+            placeholder="Adicione observações sobre este processo…"
+            className="bg-background border-border min-h-[80px]"
+          />
+          <div className="flex justify-end">
+            <Button size="sm" onClick={saveObs} disabled={saving}>
+              {saving ? "Salvando…" : "Salvar observação"}
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EditMachineDialog({ open, onOpenChange, machine }: { open: boolean; onOpenChange: (v: boolean) => void; machine: any }) {
+  const qc = useQueryClient();
+  const [form, setForm] = useState({
+    nome: machine.nome,
+    numero_serie: machine.numero_serie,
+    cliente: machine.cliente,
+    data_entrega: machine.data_entrega,
+  });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setForm({
+      nome: machine.nome,
+      numero_serie: machine.numero_serie,
+      cliente: machine.cliente,
+      data_entrega: machine.data_entrega,
+    });
+  }, [machine, open]);
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await supabase.from("machines").update(form).eq("id", machine.id);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Máquina atualizada");
+    qc.invalidateQueries({ queryKey: ["machine", machine.id] });
+    qc.invalidateQueries({ queryKey: ["machines"] });
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Editar máquina</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Nome</Label>
+            <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Número de Série</Label>
+            <Input value={form.numero_serie} onChange={(e) => setForm({ ...form, numero_serie: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Cliente</Label>
+            <Input value={form.cliente} onChange={(e) => setForm({ ...form, cliente: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Data de Entrega</Label>
+            <Input type="date" value={form.data_entrega} onChange={(e) => setForm({ ...form, data_entrega: e.target.value })} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          <Button onClick={save} disabled={saving}>{saving ? "Salvando…" : "Salvar"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

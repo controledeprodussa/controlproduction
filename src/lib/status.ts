@@ -25,3 +25,10 @@ export function progressColor(p: number, atrasado: boolean): string {
   if (p >= 100) return "bg-[color:var(--status-entregue)]";
   return "bg-[color:var(--status-producao)]";
 }
+
+/** Parse a YYYY-MM-DD date string as a local-time Date (avoid UTC shift). */
+export function parseLocalDate(s: string): Date {
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1);
+}
+

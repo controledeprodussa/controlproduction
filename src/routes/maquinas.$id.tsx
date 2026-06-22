@@ -70,7 +70,8 @@ function MachineDetail() {
 
   if (!machine) return <div className="text-muted-foreground">Carregando…</div>;
 
-  const atrasado = machine.status !== "entregue" && new Date(machine.data_entrega) < new Date(new Date().toDateString());
+  const today = new Date(); today.setHours(0,0,0,0);
+  const atrasado = machine.status !== "entregue" && parseLocalDate(machine.data_entrega) < today;
   const progresso = Math.round(Number(machine.progresso));
 
   return (

@@ -113,7 +113,7 @@ function MachineDetail() {
           <InfoBlock
             icon={Calendar}
             label="Entrega"
-            value={format(new Date(machine.data_entrega), "dd/MM/yyyy")}
+            value={format(parseLocalDate(machine.data_entrega), "dd/MM/yyyy")}
             valueClass={atrasado ? "text-[color:var(--status-atrasado)]" : ""}
           />
           <div>

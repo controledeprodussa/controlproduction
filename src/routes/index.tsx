@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Badge } from "@/components/ui/badge";
-import { STATUS_LABEL, statusClasses, progressColor, type MachineStatus } from "@/lib/status";
-import { Factory, Calendar, User, Hash, AlertTriangle } from "lucide-react";
+import { STATUS_LABEL, statusClasses, progressColor, parseLocalDate, type MachineStatus } from "@/lib/status";
+import { Factory, Calendar, User, Hash, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/")({

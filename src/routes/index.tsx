@@ -142,11 +142,11 @@ function StatCard({ label, value, status }: { label: string; value: string | num
 
 function Info({ icon: Icon, label, value, valueClass = "" }: { icon: any; label: string; value: string; valueClass?: string }) {
   return (
-    <div className="flex items-center gap-2 min-w-0">
-      <Icon className="size-3.5 text-muted-foreground shrink-0" />
+    <div className="flex items-start gap-2 min-w-0">
+      <Icon className="size-3.5 text-muted-foreground shrink-0 mt-1" />
       <div className="min-w-0">
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-        {value && <div className={`truncate ${valueClass}`}>{value}</div>}
+        <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground font-medium">{label}</div>
+        {value && <div className={`text-sm font-medium truncate mt-0.5 ${valueClass}`}>{value}</div>}
       </div>
     </div>
   );

@@ -168,11 +168,17 @@ function Dashboard() {
       {fullscreen && (
         <div className="fixed inset-0 z-50 bg-background overflow-auto">
           <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-6 md:px-10 py-5 bg-background/95 backdrop-blur border-b border-border">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Máquinas em produção</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                {ativas.length} {ativas.length === 1 ? "máquina ativa" : "máquinas ativas"}
-              </p>
+            <div className="flex items-center gap-6 min-w-0 flex-1">
+              <div className="shrink-0">
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Visão Geral</h1>
+                <p className="text-sm text-muted-foreground mt-0.5">Produção em tempo real</p>
+              </div>
+              <div className="hidden md:grid grid-cols-4 gap-2 flex-1 max-w-3xl">
+                <MiniStat label="Engenharia" value={count("engenharia")} status="engenharia" />
+                <MiniStat label="Compras" value={count("compras")} status="compras" />
+                <MiniStat label="Produção" value={count("producao")} status="producao" />
+                <MiniStat label="Embarque" value={count("embarque")} status="embarque" />
+              </div>
             </div>
             <div className="flex items-center gap-2">
               {ViewToggle}
@@ -269,6 +275,15 @@ function StatCard({ label, value, status }: { label: string; value: string | num
         {value}
       </div>
     </Card>
+  );
+}
+
+function MiniStat({ label, value, status }: { label: string; value: string | number; status: MachineStatus }) {
+  return (
+    <div className="rounded-xl border border-border bg-card px-3 py-2 flex items-center justify-between gap-2">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium truncate">{label}</div>
+      <div className="text-xl font-bold tabular-nums" style={{ color: `var(--status-${status})` }}>{value}</div>
+    </div>
   );
 }
 

@@ -278,6 +278,15 @@ function StatCard({ label, value, status }: { label: string; value: string | num
   );
 }
 
+function MiniStat({ label, value, status }: { label: string; value: string | number; status: MachineStatus }) {
+  return (
+    <div className="rounded-xl border border-border bg-card px-3 py-2 flex items-center justify-between gap-2">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium truncate">{label}</div>
+      <div className="text-xl font-bold tabular-nums" style={{ color: `var(--status-${status})` }}>{value}</div>
+    </div>
+  );
+}
+
 function PrazoPill({ atrasado }: { atrasado: boolean }) {
   if (atrasado) {
     return (

@@ -180,8 +180,6 @@ function Dashboard() {
       )}
     </div>
   );
-    </div>
-  );
 }
 
 function MachineCard({ m }: { m: Machine }) {

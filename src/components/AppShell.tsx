@@ -76,11 +76,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="md:hidden h-14 flex items-center gap-2 border-b border-border px-3 bg-card/40 backdrop-blur sticky top-0 z-30">
-          <button onClick={() => setOpen(true)} className="p-2 rounded-lg hover:bg-accent">
+        <header className="h-14 md:h-16 flex items-center gap-2 md:gap-4 border-b border-border px-3 md:px-6 bg-card/40 backdrop-blur sticky top-0 z-30">
+          <button onClick={() => setOpen(true)} className="md:hidden p-2 rounded-lg hover:bg-accent">
             <Menu className="size-5" />
           </button>
-          <div className="font-semibold">Controle</div>
+          <div className="md:hidden font-semibold mr-1">Controle</div>
+          <div className="flex-1 max-w-2xl md:mx-auto">
+            <GlobalSearch />
+          </div>
         </header>
         <main className="flex-1 p-4 md:p-8 max-w-[1400px] w-full mx-auto">
           {children}

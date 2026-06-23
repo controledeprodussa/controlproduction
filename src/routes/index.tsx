@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Badge } from "@/components/ui/badge";
 import { STATUS_LABEL, statusClasses, progressColor, parseLocalDate, type MachineStatus } from "@/lib/status";
-import { Factory, Calendar, User, Hash, AlertTriangle, CheckCircle2, Maximize2, ArrowLeft } from "lucide-react";
+import { Factory, Calendar, User, Hash, AlertTriangle, CheckCircle2, Maximize2, ArrowLeft, LayoutGrid, List } from "lucide-react";
 import { format } from "date-fns";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Dashboard · Controle de Produção" }] }),

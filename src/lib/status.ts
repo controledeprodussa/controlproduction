@@ -21,8 +21,8 @@ export function statusClasses(s: MachineStatus): string {
 }
 
 export function progressColor(p: number, atrasado: boolean): string {
+  if (p >= 100) return "bg-[color:var(--status-producao)]";
   if (atrasado) return "bg-[color:var(--status-atrasado)]";
-  if (p >= 100) return "bg-[color:var(--status-entregue)]";
   return "bg-[color:var(--status-producao)]";
 }
 

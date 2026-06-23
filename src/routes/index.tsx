@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -35,6 +35,7 @@ function isAtrasado(m: Machine) {
 }
 
 function Dashboard() {
+  const queryClient = useQueryClient();
   const { data: machines = [], isLoading } = useQuery({
     queryKey: ["machines"],
     queryFn: async () => {
@@ -45,7 +46,32 @@ function Dashboard() {
       if (error) throw error;
       return data as Machine[];
     },
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
   });
+
+  // Realtime updates: refetch on any change to machines or processes
+  useEffect(() => {
+    const channel = supabase
+      .channel("dashboard-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "machines" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["machines"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "machine_processes" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["machines"] });
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  // Full page reload every 12 hours (for kiosk/TV display)
+  useEffect(() => {
+    const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+    const t = setTimeout(() => window.location.reload(), TWELVE_HOURS);
+    return () => clearTimeout(t);
+  }, []);
 
   const ativas = machines.filter((m) => m.status !== "entregue");
   const count = (s: MachineStatus) => machines.filter((m) => m.status === s).length;

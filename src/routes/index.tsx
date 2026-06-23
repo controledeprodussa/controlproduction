@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Badge } from "@/components/ui/badge";
 import { STATUS_LABEL, statusClasses, progressColor, parseLocalDate, type MachineStatus } from "@/lib/status";
-import { Factory, Calendar, User, Hash, AlertTriangle, CheckCircle2, Maximize2, ArrowLeft } from "lucide-react";
+import { Factory, Calendar, User, Hash, AlertTriangle, CheckCircle2, Maximize2, ArrowLeft, LayoutGrid, List } from "lucide-react";
 import { format } from "date-fns";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Dashboard · Controle de Produção" }] }),
@@ -49,6 +51,8 @@ function Dashboard() {
   const count = (s: MachineStatus) => machines.filter((m) => m.status === s).length;
 
   const [fullscreen, setFullscreen] = useState(false);
+  const [view, setView] = useState<"cards" | "list">("cards");
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!fullscreen) return;
@@ -61,6 +65,31 @@ function Dashboard() {
     };
   }, [fullscreen]);
 
+  const ViewToggle = (
+    <div className="inline-flex items-center rounded-lg border border-border bg-card p-0.5">
+      <Button
+        variant={view === "cards" ? "secondary" : "ghost"}
+        size="sm"
+        className="h-8 px-2"
+        onClick={() => setView("cards")}
+        aria-label="Ver em cards"
+        title="Ver em cards"
+      >
+        <LayoutGrid className="size-4" />
+      </Button>
+      <Button
+        variant={view === "list" ? "secondary" : "ghost"}
+        size="sm"
+        className="h-8 px-2"
+        onClick={() => setView("list")}
+        aria-label="Ver em lista"
+        title="Ver em lista"
+      >
+        <List className="size-4" />
+      </Button>
+    </div>
+  );
+
   return (
     <div className="space-y-8">
       <header className="flex items-start justify-between gap-4">
@@ -68,15 +97,18 @@ function Dashboard() {
           <h1 className="text-3xl font-bold tracking-tight">Visão geral</h1>
           <p className="text-muted-foreground mt-1">Produção em tempo real</p>
         </div>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setFullscreen(true)}
-          aria-label="Modo tela cheia"
-          title="Modo tela cheia"
-        >
-          <Maximize2 className="size-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {ViewToggle}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setFullscreen(true)}
+            aria-label="Modo tela cheia"
+            title="Modo tela cheia"
+          >
+            <Maximize2 className="size-4" />
+          </Button>
+        </div>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -94,7 +126,7 @@ function Dashboard() {
           <Card className="p-10 text-center text-muted-foreground">
             Nenhuma máquina em andamento. Vá em <span className="text-foreground font-medium">Criar</span> para começar.
           </Card>
-        ) : (
+        ) : view === "cards" ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {ativas.map((m) => (
               <Link key={m.id} to="/maquinas/$id" params={{ id: m.id }}>
@@ -102,6 +134,8 @@ function Dashboard() {
               </Link>
             ))}
           </div>
+        ) : (
+          <MachineTable machines={ativas} onRowClick={(id) => navigate({ to: "/maquinas/$id", params: { id } })} />
         )}
       </section>
 
@@ -114,27 +148,32 @@ function Dashboard() {
                 {ativas.length} {ativas.length === 1 ? "máquina ativa" : "máquinas ativas"}
               </p>
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setFullscreen(false)}
-              aria-label="Voltar"
-              title="Voltar"
-            >
-              <ArrowLeft className="size-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              {ViewToggle}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setFullscreen(false)}
+                aria-label="Voltar"
+                title="Voltar"
+              >
+                <ArrowLeft className="size-4" />
+              </Button>
+            </div>
           </div>
           <div className="p-6 md:p-10">
             {ativas.length === 0 ? (
               <Card className="p-10 text-center text-muted-foreground">
                 Nenhuma máquina em andamento.
               </Card>
-            ) : (
+            ) : view === "cards" ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
                 {ativas.map((m) => (
                   <MachineCard key={m.id} m={m} />
                 ))}
               </div>
+            ) : (
+              <MachineTable machines={ativas} onRowClick={(id) => navigate({ to: "/maquinas/$id", params: { id } })} />
             )}
           </div>
         </div>
@@ -233,5 +272,55 @@ function Info({ icon: Icon, label, value, valueClass = "" }: { icon: any; label:
         {value && <div className={`text-sm font-medium truncate mt-0.5 ${valueClass}`}>{value}</div>}
       </div>
     </div>
+  );
+}
+
+function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClick: (id: string) => void }) {
+  return (
+    <Card className="rounded-2xl border border-border bg-card overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead>Nº de Série</TableHead>
+            <TableHead>Cliente</TableHead>
+            <TableHead>Modelo</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Entrega</TableHead>
+            <TableHead>Prazo</TableHead>
+            <TableHead className="w-[220px]">Progresso</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {machines.map((m) => {
+            const atrasado = isAtrasado(m);
+            const progresso = Math.round(Number(m.progresso));
+            return (
+              <TableRow
+                key={m.id}
+                onClick={() => onRowClick(m.id)}
+                className="cursor-pointer"
+              >
+                <TableCell className="font-medium">{m.numero_serie}</TableCell>
+                <TableCell>{m.cliente}</TableCell>
+                <TableCell className="text-muted-foreground">{m.modelo_nome ?? "—"}</TableCell>
+                <TableCell>
+                  <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
+                </TableCell>
+                <TableCell className={atrasado ? "text-[color:var(--status-atrasado)] font-medium" : ""}>
+                  {format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
+                </TableCell>
+                <TableCell><PrazoPill atrasado={atrasado} /></TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <ProgressBar value={progresso} indicatorClassName={progressColor(progresso, atrasado)} className="flex-1" />
+                    <span className="text-xs font-semibold tabular-nums w-10 text-right">{progresso}%</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </Card>
   );
 }

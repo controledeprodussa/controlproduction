@@ -51,6 +51,8 @@ function Dashboard() {
   const count = (s: MachineStatus) => machines.filter((m) => m.status === s).length;
 
   const [fullscreen, setFullscreen] = useState(false);
+  const [view, setView] = useState<"cards" | "list">("cards");
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!fullscreen) return;
@@ -63,6 +65,31 @@ function Dashboard() {
     };
   }, [fullscreen]);
 
+  const ViewToggle = (
+    <div className="inline-flex items-center rounded-lg border border-border bg-card p-0.5">
+      <Button
+        variant={view === "cards" ? "secondary" : "ghost"}
+        size="sm"
+        className="h-8 px-2"
+        onClick={() => setView("cards")}
+        aria-label="Ver em cards"
+        title="Ver em cards"
+      >
+        <LayoutGrid className="size-4" />
+      </Button>
+      <Button
+        variant={view === "list" ? "secondary" : "ghost"}
+        size="sm"
+        className="h-8 px-2"
+        onClick={() => setView("list")}
+        aria-label="Ver em lista"
+        title="Ver em lista"
+      >
+        <List className="size-4" />
+      </Button>
+    </div>
+  );
+
   return (
     <div className="space-y-8">
       <header className="flex items-start justify-between gap-4">
@@ -70,15 +97,18 @@ function Dashboard() {
           <h1 className="text-3xl font-bold tracking-tight">Visão geral</h1>
           <p className="text-muted-foreground mt-1">Produção em tempo real</p>
         </div>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setFullscreen(true)}
-          aria-label="Modo tela cheia"
-          title="Modo tela cheia"
-        >
-          <Maximize2 className="size-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {ViewToggle}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setFullscreen(true)}
+            aria-label="Modo tela cheia"
+            title="Modo tela cheia"
+          >
+            <Maximize2 className="size-4" />
+          </Button>
+        </div>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -96,7 +126,7 @@ function Dashboard() {
           <Card className="p-10 text-center text-muted-foreground">
             Nenhuma máquina em andamento. Vá em <span className="text-foreground font-medium">Criar</span> para começar.
           </Card>
-        ) : (
+        ) : view === "cards" ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {ativas.map((m) => (
               <Link key={m.id} to="/maquinas/$id" params={{ id: m.id }}>
@@ -104,6 +134,8 @@ function Dashboard() {
               </Link>
             ))}
           </div>
+        ) : (
+          <MachineTable machines={ativas} onRowClick={(id) => navigate({ to: "/maquinas/$id", params: { id } })} />
         )}
       </section>
 
@@ -116,31 +148,38 @@ function Dashboard() {
                 {ativas.length} {ativas.length === 1 ? "máquina ativa" : "máquinas ativas"}
               </p>
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setFullscreen(false)}
-              aria-label="Voltar"
-              title="Voltar"
-            >
-              <ArrowLeft className="size-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              {ViewToggle}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setFullscreen(false)}
+                aria-label="Voltar"
+                title="Voltar"
+              >
+                <ArrowLeft className="size-4" />
+              </Button>
+            </div>
           </div>
           <div className="p-6 md:p-10">
             {ativas.length === 0 ? (
               <Card className="p-10 text-center text-muted-foreground">
                 Nenhuma máquina em andamento.
               </Card>
-            ) : (
+            ) : view === "cards" ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
                 {ativas.map((m) => (
                   <MachineCard key={m.id} m={m} />
                 ))}
               </div>
+            ) : (
+              <MachineTable machines={ativas} onRowClick={(id) => navigate({ to: "/maquinas/$id", params: { id } })} />
             )}
           </div>
         </div>
       )}
+    </div>
+  );
     </div>
   );
 }

@@ -274,3 +274,53 @@ function Info({ icon: Icon, label, value, valueClass = "" }: { icon: any; label:
     </div>
   );
 }
+
+function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClick: (id: string) => void }) {
+  return (
+    <Card className="rounded-2xl border border-border bg-card overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead>Nº de Série</TableHead>
+            <TableHead>Cliente</TableHead>
+            <TableHead>Modelo</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Entrega</TableHead>
+            <TableHead>Prazo</TableHead>
+            <TableHead className="w-[220px]">Progresso</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {machines.map((m) => {
+            const atrasado = isAtrasado(m);
+            const progresso = Math.round(Number(m.progresso));
+            return (
+              <TableRow
+                key={m.id}
+                onClick={() => onRowClick(m.id)}
+                className="cursor-pointer"
+              >
+                <TableCell className="font-medium">{m.numero_serie}</TableCell>
+                <TableCell>{m.cliente}</TableCell>
+                <TableCell className="text-muted-foreground">{m.modelo_nome ?? "—"}</TableCell>
+                <TableCell>
+                  <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
+                </TableCell>
+                <TableCell className={atrasado ? "text-[color:var(--status-atrasado)] font-medium" : ""}>
+                  {format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
+                </TableCell>
+                <TableCell><PrazoPill atrasado={atrasado} /></TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <ProgressBar value={progresso} indicatorClassName={progressColor(progresso, atrasado)} className="flex-1" />
+                    <span className="text-xs font-semibold tabular-nums w-10 text-right">{progresso}%</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </Card>
+  );
+}

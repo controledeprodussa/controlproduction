@@ -102,7 +102,7 @@ export function GlobalSearch({ className }: { className?: string }) {
         }}
         onFocus={() => setOpen(true)}
         onKeyDown={onKeyDown}
-        placeholder="Buscar por nº de série, cliente ou nome…"
+        placeholder="Buscar..."
         className="pl-9 pr-9 h-10 rounded-xl bg-card border-border"
         aria-label="Buscar máquinas"
       />

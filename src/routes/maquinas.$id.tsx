@@ -26,7 +26,10 @@ export const Route = createFileRoute("/maquinas/$id")({
 function MachineDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { data: machine } = useQuery({
     queryKey: ["machine", id],

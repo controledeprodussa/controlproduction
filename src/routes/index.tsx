@@ -73,7 +73,9 @@ function Dashboard() {
     return () => clearTimeout(t);
   }, []);
 
-  const ativas = machines.filter((m) => m.status !== "entregue");
+  const ativas = machines
+    .filter((m) => m.status !== "entregue")
+    .sort((a, b) => a.numero_serie.localeCompare(b.numero_serie, undefined, { numeric: true, sensitivity: "base" }));
   const count = (s: MachineStatus) => machines.filter((m) => m.status === s).length;
 
   const [fullscreen, setFullscreen] = useState(false);

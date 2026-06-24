@@ -181,6 +181,27 @@ function MachineDetail() {
       </Card>
 
       <EditMachineDialog open={editing} onOpenChange={setEditing} machine={machine} />
+
+      <AlertDialog open={deleting} onOpenChange={(v) => !isDeleting && setDeleting(v)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir máquina?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A máquina <strong>{machine.nome}</strong> (Nº {machine.numero_serie}) e todos os seus processos serão removidos permanentemente. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-[color:var(--status-atrasado)] text-white hover:bg-[color:var(--status-atrasado)]/90"
+            >
+              {isDeleting ? "Excluindo…" : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

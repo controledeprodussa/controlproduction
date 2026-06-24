@@ -73,7 +73,9 @@ function Dashboard() {
     return () => clearTimeout(t);
   }, []);
 
-  const ativas = machines.filter((m) => m.status !== "entregue");
+  const ativas = machines
+    .filter((m) => m.status !== "entregue")
+    .sort((a, b) => a.numero_serie.localeCompare(b.numero_serie, undefined, { numeric: true, sensitivity: "base" }));
   const count = (s: MachineStatus) => machines.filter((m) => m.status === s).length;
 
   const [fullscreen, setFullscreen] = useState(false);
@@ -322,13 +324,13 @@ function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClic
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="text-center text-muted-foreground/60">Nº de Série</TableHead>
-            <TableHead className="text-center text-muted-foreground/60">Cliente</TableHead>
-            <TableHead className="text-center text-muted-foreground/60">Modelo</TableHead>
-            <TableHead className="text-center text-muted-foreground/60">Status</TableHead>
-            <TableHead className="text-center text-muted-foreground/60">Entrega</TableHead>
-            <TableHead className="text-center text-muted-foreground/60">Prazo</TableHead>
-            <TableHead className="text-center text-muted-foreground/60 w-[220px]">Progresso</TableHead>
+            <TableHead className="text-center text-foreground/90">Nº de Série</TableHead>
+            <TableHead className="text-center text-foreground/90">Cliente</TableHead>
+            <TableHead className="text-center text-foreground/90">Modelo</TableHead>
+            <TableHead className="text-center text-foreground/90">Status</TableHead>
+            <TableHead className="text-center text-foreground/90">Entrega</TableHead>
+            <TableHead className="text-center text-foreground/90">Prazo</TableHead>
+            <TableHead className="text-center text-foreground/90 w-[220px]">Progresso</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

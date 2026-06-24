@@ -114,6 +114,15 @@ function MachineDetail() {
                 >
                   <Pencil className="size-4" />
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-[color:var(--status-atrasado)] hover:text-[color:var(--status-atrasado)] hover:bg-[color:var(--status-atrasado)]/10"
+                  onClick={() => setDeleting(true)}
+                  aria-label="Excluir máquina"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
               </div>
               <p className="text-sm text-muted-foreground">{machine.modelo_nome ?? "—"}</p>
             </div>

@@ -281,7 +281,7 @@ function StatCard({ label, value, status }: { label: string; value: string | num
 function MiniStat({ label, value, status }: { label: string; value: string | number; status: MachineStatus }) {
   return (
     <div className="rounded-xl border border-border bg-card px-3 py-2 flex items-center justify-between gap-2">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium truncate">{label}</div>
+      <div className="text-[10px] uppercase tracking-wider text-white font-medium truncate">{label}</div>
       <div className="text-xl font-bold tabular-nums" style={{ color: `var(--status-${status})` }}>{value}</div>
     </div>
   );
@@ -322,13 +322,13 @@ function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClic
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead>Nº de Série</TableHead>
-            <TableHead>Cliente</TableHead>
-            <TableHead>Modelo</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Entrega</TableHead>
-            <TableHead>Prazo</TableHead>
-            <TableHead className="w-[220px]">Progresso</TableHead>
+            <TableHead className="text-center text-muted-foreground/60">Nº de Série</TableHead>
+            <TableHead className="text-center text-muted-foreground/60">Cliente</TableHead>
+            <TableHead className="text-center text-muted-foreground/60">Modelo</TableHead>
+            <TableHead className="text-center text-muted-foreground/60">Status</TableHead>
+            <TableHead className="text-center text-muted-foreground/60">Entrega</TableHead>
+            <TableHead className="text-center text-muted-foreground/60">Prazo</TableHead>
+            <TableHead className="text-center text-muted-foreground/60 w-[220px]">Progresso</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -341,16 +341,20 @@ function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClic
                 onClick={() => onRowClick(m.id)}
                 className="cursor-pointer"
               >
-                <TableCell className="font-medium">{m.numero_serie}</TableCell>
-                <TableCell>{m.cliente}</TableCell>
-                <TableCell className="text-muted-foreground">{m.modelo_nome ?? "—"}</TableCell>
-                <TableCell>
-                  <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
+                <TableCell className="text-center font-medium">{m.numero_serie}</TableCell>
+                <TableCell className="text-center">{m.cliente}</TableCell>
+                <TableCell className="text-center">{m.modelo_nome ?? "—"}</TableCell>
+                <TableCell className="text-center">
+                  <div className="flex justify-center">
+                    <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
+                  </div>
                 </TableCell>
-                <TableCell className={atrasado ? "text-[color:var(--status-atrasado)] font-medium" : ""}>
+                <TableCell className={`text-center ${atrasado ? "text-[color:var(--status-atrasado)] font-medium" : ""}`}>
                   {format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
                 </TableCell>
-                <TableCell><PrazoPill atrasado={atrasado} /></TableCell>
+                <TableCell>
+                  <div className="flex justify-center"><PrazoPill atrasado={atrasado} /></div>
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <ProgressBar value={progresso} indicatorClassName={progressColor(progresso, atrasado)} className="flex-1" />

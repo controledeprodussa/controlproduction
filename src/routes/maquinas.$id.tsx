@@ -72,6 +72,18 @@ function MachineDetail() {
     qc.invalidateQueries({ queryKey: ["machines"] });
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    const { error: e1 } = await supabase.from("machine_processes").delete().eq("machine_id", id);
+    if (e1) { setIsDeleting(false); return toast.error(e1.message); }
+    const { error } = await supabase.from("machines").delete().eq("id", id);
+    setIsDeleting(false);
+    if (error) return toast.error(error.message);
+    toast.success("Máquina excluída");
+    qc.invalidateQueries({ queryKey: ["machines"] });
+    navigate({ to: "/" });
+  };
+
   if (!machine) return <div className="text-muted-foreground">Carregando…</div>;
 
   const today = new Date(); today.setHours(0,0,0,0);

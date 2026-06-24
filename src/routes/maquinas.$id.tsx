@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,10 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProgressBar } from "@/components/ProgressBar";
 import { STATUS_LABEL, STATUS_ORDER, statusClasses, progressColor, parseLocalDate, type MachineStatus } from "@/lib/status";
-import { ArrowLeft, Calendar, User, Hash, Factory, Pencil, ChevronDown, MessageSquare } from "lucide-react";
+import { ArrowLeft, Calendar, User, Hash, Factory, Pencil, ChevronDown, MessageSquare, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -25,7 +26,10 @@ export const Route = createFileRoute("/maquinas/$id")({
 function MachineDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { data: machine } = useQuery({
     queryKey: ["machine", id],
@@ -68,6 +72,18 @@ function MachineDetail() {
     qc.invalidateQueries({ queryKey: ["machines"] });
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    const { error: e1 } = await supabase.from("machine_processes").delete().eq("machine_id", id);
+    if (e1) { setIsDeleting(false); return toast.error(e1.message); }
+    const { error } = await supabase.from("machines").delete().eq("id", id);
+    setIsDeleting(false);
+    if (error) return toast.error(error.message);
+    toast.success("Máquina excluída");
+    qc.invalidateQueries({ queryKey: ["machines"] });
+    navigate({ to: "/" });
+  };
+
   if (!machine) return <div className="text-muted-foreground">Carregando…</div>;
 
   const today = new Date(); today.setHours(0,0,0,0);
@@ -97,6 +113,15 @@ function MachineDetail() {
                   aria-label="Editar máquina"
                 >
                   <Pencil className="size-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-[color:var(--status-atrasado)] hover:text-[color:var(--status-atrasado)] hover:bg-[color:var(--status-atrasado)]/10"
+                  onClick={() => setDeleting(true)}
+                  aria-label="Excluir máquina"
+                >
+                  <Trash2 className="size-4" />
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">{machine.modelo_nome ?? "—"}</p>
@@ -156,6 +181,27 @@ function MachineDetail() {
       </Card>
 
       <EditMachineDialog open={editing} onOpenChange={setEditing} machine={machine} />
+
+      <AlertDialog open={deleting} onOpenChange={(v) => !isDeleting && setDeleting(v)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir máquina?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A máquina <strong>{machine.nome}</strong> (Nº {machine.numero_serie}) e todos os seus processos serão removidos permanentemente. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-[color:var(--status-atrasado)] text-white hover:bg-[color:var(--status-atrasado)]/90"
+            >
+              {isDeleting ? "Excluindo…" : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

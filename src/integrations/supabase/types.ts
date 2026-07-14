@@ -161,6 +161,7 @@ export type Database = {
           link_relatorio: string | null
           numero_serie: string
           relatorio: string
+          relatorio_id: string | null
           tecnico: string
         }
         Insert: {
@@ -171,6 +172,7 @@ export type Database = {
           link_relatorio?: string | null
           numero_serie: string
           relatorio: string
+          relatorio_id?: string | null
           tecnico: string
         }
         Update: {
@@ -181,6 +183,7 @@ export type Database = {
           link_relatorio?: string | null
           numero_serie?: string
           relatorio?: string
+          relatorio_id?: string | null
           tecnico?: string
         }
         Relationships: [

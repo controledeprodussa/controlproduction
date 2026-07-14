@@ -192,20 +192,54 @@ function MachineDetail() {
         </div>
       </Card>
 
-      <Card className="p-6 rounded-2xl space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold">Checklist de Produção</h2>
-          <p className="text-sm text-muted-foreground">Marque os processos concluídos — o progresso atualiza automaticamente.</p>
-        </div>
-        <div className="space-y-2">
-          {processes.map((p: any) => (
-            <ProcessItem key={p.id} proc={p} onToggle={toggle} machineId={id} />
-          ))}
-          {processes.length === 0 && (
-            <div className="text-sm text-muted-foreground p-6 text-center">Sem processos cadastrados.</div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="bg-secondary">
+          <TabsTrigger value="checklist" className="gap-1.5">
+            <MessageSquare className="size-4" /> Checklist
+          </TabsTrigger>
+          {machine.status === "entregue" && (
+            <TabsTrigger value="manutencoes" className="gap-1.5">
+              <Wrench className="size-4" /> Manutenções
+            </TabsTrigger>
           )}
-        </div>
-      </Card>
+        </TabsList>
+
+        <TabsContent value="checklist">
+          <Card className="p-6 rounded-2xl space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold">Checklist de Produção</h2>
+              <p className="text-sm text-muted-foreground">Marque os processos concluídos — o progresso atualiza automaticamente.</p>
+            </div>
+            <div className="space-y-2">
+              {processes.map((p: any) => (
+                <ProcessItem key={p.id} proc={p} onToggle={toggle} machineId={id} />
+              ))}
+              {processes.length === 0 && (
+                <div className="text-sm text-muted-foreground p-6 text-center">Sem processos cadastrados.</div>
+              )}
+            </div>
+          </Card>
+        </TabsContent>
+
+        {machine.status === "entregue" && (
+          <TabsContent value="manutencoes">
+            <Card className="p-6 rounded-2xl space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold">Manutenções</h2>
+                <p className="text-sm text-muted-foreground">Histórico de visitas técnicas desta máquina.</p>
+              </div>
+              <div className="space-y-4">
+                {manutencoes.map((m) => (
+                  <MaintenanceItem key={m.id} maintenance={m} />
+                ))}
+                {manutencoes.length === 0 && (
+                  <div className="text-sm text-muted-foreground p-6 text-center">Nenhuma manutenção registrada.</div>
+                )}
+              </div>
+            </Card>
+          </TabsContent>
+        )}
+      </Tabs>
 
       <EditMachineDialog open={editing} onOpenChange={setEditing} machine={machine} />
 

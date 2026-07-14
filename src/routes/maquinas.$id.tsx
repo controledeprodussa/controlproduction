@@ -393,6 +393,52 @@ function EditMachineDialog({ open, onOpenChange, machine }: { open: boolean; onO
   );
 }
 
+function MaintenanceItem({ maintenance }: { maintenance: Manutencao }) {
+  const [expanded, setExpanded] = useState(false);
+  const previewLimit = 160;
+  const fullText = maintenance.relatorio ?? "";
+  const hasPreview = fullText.length > previewLimit;
+  const preview = hasPreview ? `${fullText.slice(0, previewLimit).trim()}…` : fullText;
+
+  return (
+    <div className="rounded-xl border border-border bg-secondary/40 p-4 space-y-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex items-center gap-3 text-sm">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <Calendar className="size-3.5" />
+            <span>{format(parseLocalDate(maintenance.data_visita), "dd/MM/yyyy")}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <User className="size-3.5 text-muted-foreground" />
+            <span className="font-medium">{maintenance.tecnico}</span>
+          </div>
+        </div>
+        {maintenance.link_relatorio && (
+          <Button variant="outline" size="sm" asChild className="gap-1.5 w-full sm:w-auto">
+            <a href={maintenance.link_relatorio} target="_blank" rel="noopener noreferrer">
+              Ver relatório completo <ExternalLink className="size-3.5" />
+            </a>
+          </Button>
+        )}
+      </div>
+
+      <div className="text-sm">
+        <p className="text-muted-foreground whitespace-pre-wrap">{expanded ? fullText : preview}</p>
+        {hasPreview && (
+          <Button
+            variant="link"
+            size="sm"
+            onClick={() => setExpanded((e) => !e)}
+            className="p-0 h-auto mt-1 text-foreground"
+          >
+            {expanded ? "Mostrar menos" : "Expandir relatório"}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function InfoBlock({ icon: Icon, label, value, valueClass = "" }: { icon: any; label: string; value: string; valueClass?: string }) {
   return (
     <div>

@@ -39,10 +39,10 @@ Deno.serve(async (req) => {
     });
   }
 
-  const { numero_serie, cliente, tecnico, data_visita, relatorio, link_relatorio } =
+  const { numero_serie, cliente, tecnico, data_visita, relatorio, link_relatorio, relatorio_id } =
     payload as Record<string, string | undefined>;
 
-  if (!numero_serie || !cliente || !tecnico || !data_visita || !relatorio) {
+  if (!numero_serie || !cliente || !tecnico || !data_visita || !relatorio || !relatorio_id) {
     return new Response(
       JSON.stringify({ sucesso: false, erro: "Campos obrigatórios ausentes" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -56,14 +56,18 @@ Deno.serve(async (req) => {
 
   const { data, error } = await supabase
     .from("manutencoes")
-    .insert({
-      numero_serie,
-      cliente,
-      tecnico,
-      data_visita,
-      relatorio,
-      link_relatorio: link_relatorio ?? null,
-    })
+    .upsert(
+      {
+        relatorio_id,
+        numero_serie,
+        cliente,
+        tecnico,
+        data_visita,
+        relatorio,
+        link_relatorio: link_relatorio ?? null,
+      },
+      { onConflict: "relatorio_id" },
+    )
     .select()
     .single();
 

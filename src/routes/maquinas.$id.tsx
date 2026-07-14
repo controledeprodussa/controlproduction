@@ -12,9 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProgressBar } from "@/components/ProgressBar";
 import { STATUS_LABEL, STATUS_ORDER, statusClasses, progressColor, parseLocalDate, type MachineStatus } from "@/lib/status";
-import { ArrowLeft, Calendar, User, Hash, Factory, Pencil, ChevronDown, MessageSquare, Trash2 } from "lucide-react";
+import { ArrowLeft, Calendar, User, Hash, Factory, Pencil, ChevronDown, MessageSquare, Trash2, Wrench, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -23,6 +24,17 @@ export const Route = createFileRoute("/maquinas/$id")({
   component: MachineDetail,
 });
 
+type Manutencao = {
+  id: string;
+  numero_serie: string;
+  cliente: string;
+  tecnico: string;
+  data_visita: string;
+  relatorio: string;
+  link_relatorio: string | null;
+  criado_em: string;
+};
+
 function MachineDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
@@ -30,6 +42,7 @@ function MachineDetail() {
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [activeTab, setActiveTab] = useState("checklist");
 
   const { data: machine } = useQuery({
     queryKey: ["machine", id],
@@ -51,6 +64,20 @@ function MachineDetail() {
       if (error) throw error;
       return data;
     },
+  });
+
+  const { data: manutencoes = [] } = useQuery({
+    queryKey: ["manutencoes", machine?.numero_serie],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("manutencoes")
+        .select("*")
+        .eq("numero_serie", machine!.numero_serie)
+        .order("data_visita", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as Manutencao[];
+    },
+    enabled: !!machine?.numero_serie,
   });
 
   const toggle = async (procId: string, done: boolean) => {
@@ -165,20 +192,54 @@ function MachineDetail() {
         </div>
       </Card>
 
-      <Card className="p-6 rounded-2xl space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold">Checklist de Produção</h2>
-          <p className="text-sm text-muted-foreground">Marque os processos concluídos — o progresso atualiza automaticamente.</p>
-        </div>
-        <div className="space-y-2">
-          {processes.map((p: any) => (
-            <ProcessItem key={p.id} proc={p} onToggle={toggle} machineId={id} />
-          ))}
-          {processes.length === 0 && (
-            <div className="text-sm text-muted-foreground p-6 text-center">Sem processos cadastrados.</div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="bg-secondary">
+          <TabsTrigger value="checklist" className="gap-1.5">
+            <MessageSquare className="size-4" /> Checklist
+          </TabsTrigger>
+          {machine.status === "entregue" && (
+            <TabsTrigger value="manutencoes" className="gap-1.5">
+              <Wrench className="size-4" /> Manutenções
+            </TabsTrigger>
           )}
-        </div>
-      </Card>
+        </TabsList>
+
+        <TabsContent value="checklist">
+          <Card className="p-6 rounded-2xl space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold">Checklist de Produção</h2>
+              <p className="text-sm text-muted-foreground">Marque os processos concluídos — o progresso atualiza automaticamente.</p>
+            </div>
+            <div className="space-y-2">
+              {processes.map((p: any) => (
+                <ProcessItem key={p.id} proc={p} onToggle={toggle} machineId={id} />
+              ))}
+              {processes.length === 0 && (
+                <div className="text-sm text-muted-foreground p-6 text-center">Sem processos cadastrados.</div>
+              )}
+            </div>
+          </Card>
+        </TabsContent>
+
+        {machine.status === "entregue" && (
+          <TabsContent value="manutencoes">
+            <Card className="p-6 rounded-2xl space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold">Manutenções</h2>
+                <p className="text-sm text-muted-foreground">Histórico de visitas técnicas desta máquina.</p>
+              </div>
+              <div className="space-y-4">
+                {manutencoes.map((m) => (
+                  <MaintenanceItem key={m.id} maintenance={m} />
+                ))}
+                {manutencoes.length === 0 && (
+                  <div className="text-sm text-muted-foreground p-6 text-center">Nenhuma manutenção registrada.</div>
+                )}
+              </div>
+            </Card>
+          </TabsContent>
+        )}
+      </Tabs>
 
       <EditMachineDialog open={editing} onOpenChange={setEditing} machine={machine} />
 
@@ -329,6 +390,52 @@ function EditMachineDialog({ open, onOpenChange, machine }: { open: boolean; onO
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function MaintenanceItem({ maintenance }: { maintenance: Manutencao }) {
+  const [expanded, setExpanded] = useState(false);
+  const previewLimit = 160;
+  const fullText = maintenance.relatorio ?? "";
+  const hasPreview = fullText.length > previewLimit;
+  const preview = hasPreview ? `${fullText.slice(0, previewLimit).trim()}…` : fullText;
+
+  return (
+    <div className="rounded-xl border border-border bg-secondary/40 p-4 space-y-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex items-center gap-3 text-sm">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <Calendar className="size-3.5" />
+            <span>{format(parseLocalDate(maintenance.data_visita), "dd/MM/yyyy")}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <User className="size-3.5 text-muted-foreground" />
+            <span className="font-medium">{maintenance.tecnico}</span>
+          </div>
+        </div>
+        {maintenance.link_relatorio && (
+          <Button variant="outline" size="sm" asChild className="gap-1.5 w-full sm:w-auto">
+            <a href={maintenance.link_relatorio} target="_blank" rel="noopener noreferrer">
+              Ver relatório completo <ExternalLink className="size-3.5" />
+            </a>
+          </Button>
+        )}
+      </div>
+
+      <div className="text-sm">
+        <p className="text-muted-foreground whitespace-pre-wrap">{expanded ? fullText : preview}</p>
+        {hasPreview && (
+          <Button
+            variant="link"
+            size="sm"
+            onClick={() => setExpanded((e) => !e)}
+            className="p-0 h-auto mt-1 text-foreground"
+          >
+            {expanded ? "Mostrar menos" : "Expandir relatório"}
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }
 

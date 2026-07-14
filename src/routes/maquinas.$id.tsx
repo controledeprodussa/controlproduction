@@ -24,6 +24,17 @@ export const Route = createFileRoute("/maquinas/$id")({
   component: MachineDetail,
 });
 
+type Manutencao = {
+  id: string;
+  numero_serie: string;
+  cliente: string;
+  tecnico: string;
+  data_visita: string;
+  relatorio: string;
+  link_relatorio: string | null;
+  criado_em: string;
+};
+
 function MachineDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
@@ -31,6 +42,7 @@ function MachineDetail() {
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [activeTab, setActiveTab] = useState("checklist");
 
   const { data: machine } = useQuery({
     queryKey: ["machine", id],
@@ -52,6 +64,20 @@ function MachineDetail() {
       if (error) throw error;
       return data;
     },
+  });
+
+  const { data: manutencoes = [] } = useQuery({
+    queryKey: ["manutencoes", machine?.numero_serie],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("manutencoes")
+        .select("*")
+        .eq("numero_serie", machine!.numero_serie)
+        .order("data_visita", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as Manutencao[];
+    },
+    enabled: !!machine?.numero_serie,
   });
 
   const toggle = async (procId: string, done: boolean) => {

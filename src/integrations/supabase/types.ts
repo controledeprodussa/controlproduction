@@ -152,6 +152,47 @@ export type Database = {
           },
         ]
       }
+      manutencoes: {
+        Row: {
+          cliente: string
+          criado_em: string
+          data_visita: string
+          id: string
+          link_relatorio: string | null
+          numero_serie: string
+          relatorio: string
+          tecnico: string
+        }
+        Insert: {
+          cliente: string
+          criado_em?: string
+          data_visita: string
+          id?: string
+          link_relatorio?: string | null
+          numero_serie: string
+          relatorio: string
+          tecnico: string
+        }
+        Update: {
+          cliente?: string
+          criado_em?: string
+          data_visita?: string
+          id?: string
+          link_relatorio?: string | null
+          numero_serie?: string
+          relatorio?: string
+          tecnico?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manutencoes_numero_serie_fkey"
+            columns: ["numero_serie"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["numero_serie"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -337,8 +337,22 @@ function EditMachineDialog({ open, onOpenChange, machine }: { open: boolean; onO
     numero_serie: machine.numero_serie,
     cliente: machine.cliente,
     data_entrega: machine.data_entrega,
+    modelo_id: machine.modelo_id ?? "",
   });
   const [saving, setSaving] = useState(false);
+
+  const { data: models = [] } = useQuery({
+    queryKey: ["models", "visiveis"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("machine_models")
+        .select("id, nome")
+        .eq("visivel_registro", true)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
 
   useEffect(() => {
     setForm({
@@ -346,12 +360,22 @@ function EditMachineDialog({ open, onOpenChange, machine }: { open: boolean; onO
       numero_serie: machine.numero_serie,
       cliente: machine.cliente,
       data_entrega: machine.data_entrega,
+      modelo_id: machine.modelo_id ?? "",
     });
   }, [machine, open]);
 
   const save = async () => {
     setSaving(true);
-    const { error } = await supabase.from("machines").update(form).eq("id", machine.id);
+    const model = models.find((m: any) => m.id === form.modelo_id);
+    const payload = {
+      nome: form.nome,
+      numero_serie: form.numero_serie,
+      cliente: form.cliente,
+      data_entrega: form.data_entrega,
+      modelo_id: form.modelo_id || null,
+      modelo_nome: model?.nome ?? machine.modelo_nome ?? null,
+    };
+    const { error } = await supabase.from("machines").update(payload).eq("id", machine.id);
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Máquina atualizada");
@@ -359,6 +383,8 @@ function EditMachineDialog({ open, onOpenChange, machine }: { open: boolean; onO
     qc.invalidateQueries({ queryKey: ["machines"] });
     onOpenChange(false);
   };
+
+  const currentModelMissing = form.modelo_id && !models.some((m: any) => m.id === form.modelo_id);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -382,6 +408,27 @@ function EditMachineDialog({ open, onOpenChange, machine }: { open: boolean; onO
           <div className="space-y-2">
             <Label>Data de Entrega</Label>
             <Input type="date" value={form.data_entrega} onChange={(e) => setForm({ ...form, data_entrega: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Modelo</Label>
+            <Select value={form.modelo_id} onValueChange={(v) => setForm({ ...form, modelo_id: v })}>
+              <SelectTrigger className="bg-secondary border-border">
+                <SelectValue placeholder="Selecione um modelo" />
+              </SelectTrigger>
+              <SelectContent>
+                {currentModelMissing && machine.modelo_nome && (
+                  <SelectItem value={form.modelo_id}>{machine.modelo_nome} (oculto)</SelectItem>
+                )}
+                {models.length === 0 ? (
+                  <div className="px-2 py-3 text-sm text-muted-foreground">Nenhum modelo disponível.</div>
+                ) : (
+                  models.map((m: any) => (
+                    <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">Alterar o modelo não modifica o checklist de produção existente.</p>
           </div>
         </div>
         <DialogFooter>

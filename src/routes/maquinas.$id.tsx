@@ -460,7 +460,7 @@ function EditMachineDialog({ open, onOpenChange, machine }: { open: boolean; onO
                 )}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">Alterar o modelo não modifica o checklist de produção existente.</p>
+            <p className="text-xs text-muted-foreground">Ao alterar o modelo, o checklist desta máquina será substituído pelos processos do novo modelo.</p>
           </div>
         </div>
         <DialogFooter>

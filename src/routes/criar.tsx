@@ -291,6 +291,7 @@ function MaquinaForm() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [form, setForm] = useState({ nome: "", numero_serie: "", cliente: "", data_entrega: "", modelo_id: "" });
+  const [processos, setProcessos] = useState<Processo[]>([]);
   const [saving, setSaving] = useState(false);
 
   const { data: models = [] } = useQuery({
@@ -302,19 +303,32 @@ function MaquinaForm() {
     },
   });
 
+  const total = processos.reduce((s, p) => s + Number(p.peso || 0), 0);
+
+  const onModeloChange = async (modelo_id: string) => {
+    setForm((f) => ({ ...f, modelo_id }));
+    const { data: tpls, error } = await supabase
+      .from("machine_process_templates")
+      .select("nome, peso, ordem")
+      .eq("model_id", modelo_id)
+      .order("ordem");
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setProcessos((tpls ?? []).map((t) => ({ nome: t.nome, peso: Number(t.peso) })));
+  };
+
   const submit = async () => {
     if (!form.nome || !form.numero_serie || !form.cliente || !form.data_entrega || !form.modelo_id) {
       return toast.error("Preencha todos os campos");
     }
+    if (processos.some((p) => !p.nome.trim())) return toast.error("Preencha o nome de todos os processos");
+    if (total !== 100) return toast.error(`O total dos pesos deve ser 100% (atual: ${total}%)`);
+
     setSaving(true);
     try {
       const model = models.find((m: any) => m.id === form.modelo_id);
-      const { data: tpls, error: e0 } = await supabase
-        .from("machine_process_templates")
-        .select("nome, peso, ordem")
-        .eq("model_id", form.modelo_id)
-        .order("ordem");
-      if (e0) throw e0;
 
       const { data: machine, error } = await supabase
         .from("machines")
@@ -331,8 +345,8 @@ function MaquinaForm() {
         .single();
       if (error) throw error;
 
-      if (tpls?.length) {
-        const rows = tpls.map((t) => ({ machine_id: machine.id, nome: t.nome, peso: t.peso, ordem: t.ordem }));
+      if (processos.length) {
+        const rows = processos.map((p, i) => ({ machine_id: machine.id, nome: p.nome, peso: p.peso, ordem: i }));
         const { error: e2 } = await supabase.from("machine_processes").insert(rows);
         if (e2) throw e2;
       }
@@ -368,7 +382,7 @@ function MaquinaForm() {
         </div>
         <div className="space-y-2 md:col-span-2">
           <Label>Modelo</Label>
-          <Select value={form.modelo_id} onValueChange={(v) => setForm({ ...form, modelo_id: v })}>
+          <Select value={form.modelo_id} onValueChange={onModeloChange}>
             <SelectTrigger className="bg-secondary border-border h-11">
               <SelectValue placeholder="Selecione um modelo" />
             </SelectTrigger>
@@ -384,6 +398,16 @@ function MaquinaForm() {
           </Select>
         </div>
       </div>
+
+      {form.modelo_id && (
+        <div className="pt-2 border-t border-border">
+          <p className="text-xs text-muted-foreground mb-3">
+            Ajuste o checklist de produção desta máquina. Alterações aqui não afetam o modelo.
+          </p>
+          <ProcessosEditor processos={processos} setProcessos={setProcessos} />
+        </div>
+      )}
+
       <Button onClick={submit} disabled={saving} className="w-full h-11">
         {saving ? "Salvando…" : "Registrar Máquina"}
       </Button>

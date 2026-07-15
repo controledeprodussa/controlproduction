@@ -139,11 +139,12 @@ function Dashboard() {
         </div>
       </header>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <StatCard label="Engenharia" value={count("engenharia")} status="engenharia" />
         <StatCard label="Compras" value={count("compras")} status="compras" />
         <StatCard label="Produção" value={count("producao")} status="producao" />
         <StatCard label="Embarque" value={count("embarque")} status="embarque" />
+        <StatCard label="Entregue" value={count("entregue")} status="entregue" />
       </div>
 
       <section className="space-y-4">
@@ -175,11 +176,12 @@ function Dashboard() {
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Visão Geral</h1>
                 <p className="text-sm text-muted-foreground mt-0.5">Produção em tempo real</p>
               </div>
-              <div className="hidden md:grid grid-cols-4 gap-2 flex-1 max-w-3xl">
+              <div className="hidden md:grid grid-cols-5 gap-2 flex-1 max-w-3xl">
                 <MiniStat label="Engenharia" value={count("engenharia")} status="engenharia" />
                 <MiniStat label="Compras" value={count("compras")} status="compras" />
                 <MiniStat label="Produção" value={count("producao")} status="producao" />
                 <MiniStat label="Embarque" value={count("embarque")} status="embarque" />
+                <MiniStat label="Entregue" value={count("entregue")} status="entregue" />
               </div>
             </div>
             <div className="flex items-center gap-2">

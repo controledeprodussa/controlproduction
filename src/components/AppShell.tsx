@@ -1,12 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, PlusCircle, Cog, Menu, X, Factory } from "lucide-react";
+import { LayoutDashboard, PlusCircle, Cog, Menu, X, Factory, Wrench } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { GlobalSearch } from "@/components/GlobalSearch";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/criar", label: "Criar", icon: PlusCircle, exact: false },
+  { to: "/criar", label: "Registrar Máquina", icon: PlusCircle, exact: false },
+  { to: "/modelos", label: "Modelos", icon: Wrench, exact: false },
   { to: "/maquinas", label: "Máquinas", icon: Cog, exact: false },
 ];
 

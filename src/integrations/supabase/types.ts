@@ -19,16 +19,19 @@ export type Database = {
           created_at: string
           id: string
           nome: string
+          visivel_registro: boolean
         }
         Insert: {
           created_at?: string
           id?: string
           nome: string
+          visivel_registro?: boolean
         }
         Update: {
           created_at?: string
           id?: string
           nome?: string
+          visivel_registro?: boolean
         }
         Relationships: []
       }

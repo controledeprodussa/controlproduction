@@ -1,0 +1,1 @@
+ALTER TABLE public.machine_models ADD COLUMN IF NOT EXISTS visivel_registro boolean NOT NULL DEFAULT true;

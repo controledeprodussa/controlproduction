@@ -366,22 +366,54 @@ function EditMachineDialog({ open, onOpenChange, machine }: { open: boolean; onO
 
   const save = async () => {
     setSaving(true);
-    const model = models.find((m: any) => m.id === form.modelo_id);
-    const payload = {
-      nome: form.nome,
-      numero_serie: form.numero_serie,
-      cliente: form.cliente,
-      data_entrega: form.data_entrega,
-      modelo_id: form.modelo_id || null,
-      modelo_nome: model?.nome ?? machine.modelo_nome ?? null,
-    };
-    const { error } = await supabase.from("machines").update(payload).eq("id", machine.id);
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    toast.success("Máquina atualizada");
-    qc.invalidateQueries({ queryKey: ["machine", machine.id] });
-    qc.invalidateQueries({ queryKey: ["machines"] });
-    onOpenChange(false);
+    try {
+      const model = models.find((m: any) => m.id === form.modelo_id);
+      const modeloChanged = (form.modelo_id || null) !== (machine.modelo_id || null);
+      const payload = {
+        nome: form.nome,
+        numero_serie: form.numero_serie,
+        cliente: form.cliente,
+        data_entrega: form.data_entrega,
+        modelo_id: form.modelo_id || null,
+        modelo_nome: model?.nome ?? (modeloChanged ? null : machine.modelo_nome),
+      };
+      const { error } = await supabase.from("machines").update(payload).eq("id", machine.id);
+      if (error) throw error;
+
+      if (modeloChanged) {
+        const { error: eDel } = await supabase.from("machine_processes").delete().eq("machine_id", machine.id);
+        if (eDel) throw eDel;
+
+        if (form.modelo_id) {
+          const { data: tpls, error: eTpl } = await supabase
+            .from("machine_process_templates")
+            .select("nome, peso, ordem")
+            .eq("model_id", form.modelo_id)
+            .order("ordem");
+          if (eTpl) throw eTpl;
+          if (tpls && tpls.length) {
+            const rows = tpls.map((t, i) => ({
+              machine_id: machine.id,
+              nome: t.nome,
+              peso: t.peso,
+              ordem: t.ordem ?? i,
+            }));
+            const { error: eIns } = await supabase.from("machine_processes").insert(rows);
+            if (eIns) throw eIns;
+          }
+        }
+      }
+
+      toast.success("Máquina atualizada");
+      qc.invalidateQueries({ queryKey: ["machine", machine.id] });
+      qc.invalidateQueries({ queryKey: ["processes", machine.id] });
+      qc.invalidateQueries({ queryKey: ["machines"] });
+      onOpenChange(false);
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const currentModelMissing = form.modelo_id && !models.some((m: any) => m.id === form.modelo_id);

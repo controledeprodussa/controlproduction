@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ModelosRouteImport } from './routes/modelos'
 import { Route as CriarRouteImport } from './routes/criar'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MaquinasIndexRouteImport } from './routes/maquinas.index'
 import { Route as MaquinasIdRouteImport } from './routes/maquinas.$id'
 
+const ModelosRoute = ModelosRouteImport.update({
+  id: '/modelos',
+  path: '/modelos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CriarRoute = CriarRouteImport.update({
   id: '/criar',
   path: '/criar',
@@ -38,12 +44,14 @@ const MaquinasIdRoute = MaquinasIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/criar': typeof CriarRoute
+  '/modelos': typeof ModelosRoute
   '/maquinas/$id': typeof MaquinasIdRoute
   '/maquinas/': typeof MaquinasIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/criar': typeof CriarRoute
+  '/modelos': typeof ModelosRoute
   '/maquinas/$id': typeof MaquinasIdRoute
   '/maquinas': typeof MaquinasIndexRoute
 }
@@ -51,26 +59,35 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/criar': typeof CriarRoute
+  '/modelos': typeof ModelosRoute
   '/maquinas/$id': typeof MaquinasIdRoute
   '/maquinas/': typeof MaquinasIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/criar' | '/maquinas/$id' | '/maquinas/'
+  fullPaths: '/' | '/criar' | '/modelos' | '/maquinas/$id' | '/maquinas/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/criar' | '/maquinas/$id' | '/maquinas'
-  id: '__root__' | '/' | '/criar' | '/maquinas/$id' | '/maquinas/'
+  to: '/' | '/criar' | '/modelos' | '/maquinas/$id' | '/maquinas'
+  id: '__root__' | '/' | '/criar' | '/modelos' | '/maquinas/$id' | '/maquinas/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CriarRoute: typeof CriarRoute
+  ModelosRoute: typeof ModelosRoute
   MaquinasIdRoute: typeof MaquinasIdRoute
   MaquinasIndexRoute: typeof MaquinasIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/modelos': {
+      id: '/modelos'
+      path: '/modelos'
+      fullPath: '/modelos'
+      preLoaderRoute: typeof ModelosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/criar': {
       id: '/criar'
       path: '/criar'
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CriarRoute: CriarRoute,
+  ModelosRoute: ModelosRoute,
   MaquinasIdRoute: MaquinasIdRoute,
   MaquinasIndexRoute: MaquinasIndexRoute,
 }

@@ -14,26 +14,55 @@ export type Database = {
   }
   public: {
     Tables: {
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
       machine_models: {
         Row: {
+          company_id: string
           created_at: string
           id: string
           nome: string
           visivel_registro: boolean
         }
         Insert: {
+          company_id: string
           created_at?: string
           id?: string
           nome: string
           visivel_registro?: boolean
         }
         Update: {
+          company_id?: string
           created_at?: string
           id?: string
           nome?: string
           visivel_registro?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "machine_models_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       machine_process_templates: {
         Row: {
@@ -111,6 +140,7 @@ export type Database = {
       machines: {
         Row: {
           cliente: string
+          company_id: string
           created_at: string
           data_entrega: string
           id: string
@@ -123,6 +153,7 @@ export type Database = {
         }
         Insert: {
           cliente: string
+          company_id: string
           created_at?: string
           data_entrega: string
           id?: string
@@ -135,6 +166,7 @@ export type Database = {
         }
         Update: {
           cliente?: string
+          company_id?: string
           created_at?: string
           data_entrega?: string
           id?: string
@@ -147,6 +179,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "machines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "machines_modelo_id_fkey"
             columns: ["modelo_id"]
             isOneToOne: false
@@ -158,6 +197,7 @@ export type Database = {
       manutencoes: {
         Row: {
           cliente: string
+          company_id: string
           criado_em: string
           data_visita: string
           id: string
@@ -169,6 +209,7 @@ export type Database = {
         }
         Insert: {
           cliente: string
+          company_id: string
           criado_em?: string
           data_visita: string
           id?: string
@@ -180,6 +221,7 @@ export type Database = {
         }
         Update: {
           cliente?: string
+          company_id?: string
           criado_em?: string
           data_visita?: string
           id?: string
@@ -191,6 +233,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "manutencoes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "manutencoes_numero_serie_fkey"
             columns: ["numero_serie"]
             isOneToOne: false
@@ -199,12 +248,41 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          nome: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id: string
+          nome?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          nome?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      current_company_id: { Args: never; Returns: string }
     }
     Enums: {
       machine_status:

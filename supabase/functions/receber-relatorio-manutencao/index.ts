@@ -54,6 +54,20 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
+  const { data: company, error: companyError } = await supabase
+    .from("companies")
+    .select("id")
+    .eq("nome", "Lufati")
+    .single();
+
+  if (companyError || !company) {
+    console.error("Empresa 'Lufati' não encontrada:", companyError);
+    return new Response(
+      JSON.stringify({ sucesso: false, erro: "Empresa padrão não encontrada" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
   const { data, error } = await supabase
     .from("manutencoes")
     .upsert(
@@ -65,6 +79,7 @@ Deno.serve(async (req) => {
         data_visita,
         relatorio,
         link_relatorio: link_relatorio ?? null,
+        company_id: company.id,
       },
       { onConflict: "relatorio_id" },
     )

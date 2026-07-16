@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated.index'
+import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated.usuarios'
 import { Route as AuthenticatedModelosRouteImport } from './routes/_authenticated.modelos'
 import { Route as AuthenticatedCriarRouteImport } from './routes/_authenticated.criar'
 import { Route as AuthenticatedMaquinasIndexRouteImport } from './routes/_authenticated.maquinas.index'
@@ -29,6 +30,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedModelosRoute = AuthenticatedModelosRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/criar': typeof AuthenticatedCriarRoute
   '/modelos': typeof AuthenticatedModelosRoute
+  '/usuarios': typeof AuthenticatedUsuariosRoute
   '/maquinas/$id': typeof AuthenticatedMaquinasIdRoute
   '/maquinas/': typeof AuthenticatedMaquinasIndexRoute
 }
@@ -65,6 +72,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/criar': typeof AuthenticatedCriarRoute
   '/modelos': typeof AuthenticatedModelosRoute
+  '/usuarios': typeof AuthenticatedUsuariosRoute
   '/': typeof AuthenticatedIndexRoute
   '/maquinas/$id': typeof AuthenticatedMaquinasIdRoute
   '/maquinas': typeof AuthenticatedMaquinasIndexRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/criar': typeof AuthenticatedCriarRoute
   '/_authenticated/modelos': typeof AuthenticatedModelosRoute
+  '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/maquinas/$id': typeof AuthenticatedMaquinasIdRoute
   '/_authenticated/maquinas/': typeof AuthenticatedMaquinasIndexRoute
@@ -86,16 +95,25 @@ export interface FileRouteTypes {
     | '/auth'
     | '/criar'
     | '/modelos'
+    | '/usuarios'
     | '/maquinas/$id'
     | '/maquinas/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/criar' | '/modelos' | '/' | '/maquinas/$id' | '/maquinas'
+  to:
+    | '/auth'
+    | '/criar'
+    | '/modelos'
+    | '/usuarios'
+    | '/'
+    | '/maquinas/$id'
+    | '/maquinas'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/criar'
     | '/_authenticated/modelos'
+    | '/_authenticated/usuarios'
     | '/_authenticated/'
     | '/_authenticated/maquinas/$id'
     | '/_authenticated/maquinas/'
@@ -127,6 +145,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/usuarios': {
+      id: '/_authenticated/usuarios'
+      path: '/usuarios'
+      fullPath: '/usuarios'
+      preLoaderRoute: typeof AuthenticatedUsuariosRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/modelos': {
@@ -163,6 +188,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedCriarRoute: typeof AuthenticatedCriarRoute
   AuthenticatedModelosRoute: typeof AuthenticatedModelosRoute
+  AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedMaquinasIdRoute: typeof AuthenticatedMaquinasIdRoute
   AuthenticatedMaquinasIndexRoute: typeof AuthenticatedMaquinasIndexRoute
@@ -171,6 +197,7 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCriarRoute: AuthenticatedCriarRoute,
   AuthenticatedModelosRoute: AuthenticatedModelosRoute,
+  AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedMaquinasIdRoute: AuthenticatedMaquinasIdRoute,
   AuthenticatedMaquinasIndexRoute: AuthenticatedMaquinasIndexRoute,

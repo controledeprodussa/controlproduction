@@ -10,6 +10,7 @@ import { Factory } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Entrar · Controle de Produção" }] }),
   component: AuthPage,
 });

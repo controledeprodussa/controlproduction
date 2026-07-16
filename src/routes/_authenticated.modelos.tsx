@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useCompanyId } from "@/hooks/useCompanyId";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,6 +74,7 @@ function ProcessosEditor({ processos, setProcessos }: { processos: Processo[]; s
 
 function ModeloForm() {
   const qc = useQueryClient();
+  const companyId = useCompanyId();
   const [nome, setNome] = useState("");
   const [processos, setProcessos] = useState<Processo[]>([
     { nome: "Solda", peso: 30 },
@@ -90,7 +92,8 @@ function ModeloForm() {
 
     setSaving(true);
     try {
-      const { data: model, error } = await supabase.from("machine_models").insert({ nome }).select().single();
+      if (!companyId) throw new Error("Empresa do usuário não encontrada");
+      const { data: model, error } = await supabase.from("machine_models").insert({ nome, company_id: companyId }).select().single();
       if (error) throw error;
       const rows = processos.map((p, i) => ({ model_id: model.id, nome: p.nome, peso: p.peso, ordem: i }));
       const { error: e2 } = await supabase.from("machine_process_templates").insert(rows);

@@ -254,18 +254,24 @@ export type Database = {
           created_at: string
           id: string
           nome: string | null
+          role: string
+          usuario: string | null
         }
         Insert: {
           company_id: string
           created_at?: string
           id: string
           nome?: string | null
+          role?: string
+          usuario?: string | null
         }
         Update: {
           company_id?: string
           created_at?: string
           id?: string
           nome?: string | null
+          role?: string
+          usuario?: string | null
         }
         Relationships: [
           {
@@ -283,6 +289,7 @@ export type Database = {
     }
     Functions: {
       current_company_id: { Args: never; Returns: string }
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
     }
     Enums: {
       machine_status:

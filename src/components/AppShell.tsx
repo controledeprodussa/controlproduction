@@ -1,21 +1,27 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, PlusCircle, Cog, Menu, X, Factory, Wrench, LogOut } from "lucide-react";
+import { LayoutDashboard, PlusCircle, Cog, Menu, X, Factory, Wrench, LogOut, Users } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrentProfile } from "@/hooks/useCurrentProfile";
 
-const nav = [
+const baseNav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/criar", label: "Registrar Máquina", icon: PlusCircle, exact: false },
   { to: "/modelos", label: "Modelos", icon: Wrench, exact: false },
   { to: "/maquinas", label: "Máquinas", icon: Cog, exact: false },
+];
+const adminNav = [
+  { to: "/usuarios", label: "Usuários", icon: Users, exact: false },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
+  const { data: profile } = useCurrentProfile();
+  const nav = profile?.role === "admin" ? [...baseNav, ...adminNav] : baseNav;
 
   const signOut = async () => {
     await supabase.auth.signOut();

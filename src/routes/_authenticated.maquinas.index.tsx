@@ -11,7 +11,7 @@ import { Search } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/maquinas/")({
+export const Route = createFileRoute("/_authenticated/maquinas/")({
   head: () => ({ meta: [{ title: "Máquinas · Controle de Produção" }] }),
   component: MachinesList,
 });

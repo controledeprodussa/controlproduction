@@ -12,7 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/modelos")({
+export const Route = createFileRoute("/_authenticated/modelos")({
   head: () => ({ meta: [{ title: "Modelos · Controle de Produção" }] }),
   component: ModelosPage,
 });

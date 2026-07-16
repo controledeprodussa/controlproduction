@@ -19,7 +19,7 @@ import { ArrowLeft, Calendar, User, Hash, Factory, Pencil, ChevronDown, MessageS
 import { format } from "date-fns";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/maquinas/$id")({
+export const Route = createFileRoute("/_authenticated/maquinas/$id")({
   head: () => ({ meta: [{ title: "Máquina · Controle de Produção" }] }),
   component: MachineDetail,
 });

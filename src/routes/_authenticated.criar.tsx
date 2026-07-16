@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/criar")({
+export const Route = createFileRoute("/_authenticated/criar")({
   head: () => ({ meta: [{ title: "Registrar Máquina · Controle de Produção" }] }),
   component: CriarPage,
 });

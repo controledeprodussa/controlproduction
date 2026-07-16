@@ -20,6 +20,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
+  const { data: profile } = useCurrentProfile();
+  const nav = profile?.role === "admin" ? [...baseNav, ...adminNav] : baseNav;
 
   const signOut = async () => {
     await supabase.auth.signOut();

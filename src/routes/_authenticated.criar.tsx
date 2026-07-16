@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useCompanyId } from "@/hooks/useCompanyId";
 
-export const Route = createFileRoute("/criar")({
+export const Route = createFileRoute("/_authenticated/criar")({
   head: () => ({ meta: [{ title: "Registrar Máquina · Controle de Produção" }] }),
   component: CriarPage,
 });
@@ -71,6 +72,7 @@ function ProcessosEditor({ processos, setProcessos }: { processos: Processo[]; s
 function MaquinaForm() {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const companyId = useCompanyId();
   const [form, setForm] = useState({ nome: "", numero_serie: "", cliente: "", data_entrega: "", modelo_id: "" });
   const [processos, setProcessos] = useState<Processo[]>([]);
   const [saving, setSaving] = useState(false);
@@ -115,6 +117,7 @@ function MaquinaForm() {
     try {
       const model = models.find((m: any) => m.id === form.modelo_id);
 
+      if (!companyId) throw new Error("Empresa do usuário não encontrada");
       const { data: machine, error } = await supabase
         .from("machines")
         .insert({
@@ -125,6 +128,7 @@ function MaquinaForm() {
           modelo_id: form.modelo_id,
           modelo_nome: model?.nome ?? null,
           status: "engenharia",
+          company_id: companyId,
         })
         .select()
         .single();

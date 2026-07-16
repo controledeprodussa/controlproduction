@@ -8,7 +8,6 @@ import {
 import type { ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { AppShell } from "@/components/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -73,9 +72,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <AppShell>
-        <Outlet />
-      </AppShell>
+      <Outlet />
       <Toaster richColors theme="dark" />
     </QueryClientProvider>
   );

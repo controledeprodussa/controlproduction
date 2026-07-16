@@ -1,8 +1,9 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, PlusCircle, Cog, Menu, X, Factory, Wrench } from "lucide-react";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { LayoutDashboard, PlusCircle, Cog, Menu, X, Factory, Wrench, LogOut } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { GlobalSearch } from "@/components/GlobalSearch";
+import { supabase } from "@/integrations/supabase/client";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -14,6 +15,12 @@ const nav = [
 export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const navigate = useNavigate();
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
 
   const isActive = (to: string, exact: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
@@ -48,6 +55,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           );
         })}
       </nav>
+      <button
+        onClick={signOut}
+        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors mt-2"
+      >
+        <LogOut className="size-4" />
+        Sair
+      </button>
       <div className="mt-auto rounded-xl bg-secondary/60 p-3 text-xs text-muted-foreground">
         Sistema interno · v1.0
       </div>

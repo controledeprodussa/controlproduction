@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ProgressBar";
@@ -78,9 +79,16 @@ function Dashboard() {
     .sort((a, b) => a.numero_serie.localeCompare(b.numero_serie, undefined, { numeric: true, sensitivity: "base" }));
   const count = (s: MachineStatus) => machines.filter((m) => m.status === s).length;
 
+  const isMobile = useIsMobile();
   const [fullscreen, setFullscreen] = useState(false);
-  const [view, setView] = useState<"cards" | "list">("list");
+  const [view, setView] = useState<"cards" | "list">("cards");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isMobile !== undefined) {
+      setView(isMobile ? "cards" : "list");
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     if (!fullscreen) return;

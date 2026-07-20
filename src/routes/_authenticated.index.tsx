@@ -79,7 +79,7 @@ function Dashboard() {
   const count = (s: MachineStatus) => machines.filter((m) => m.status === s).length;
 
   const [fullscreen, setFullscreen] = useState(false);
-  const [view, setView] = useState<"cards" | "list">("cards");
+  const [view, setView] = useState<"cards" | "list">("list");
   const navigate = useNavigate();
 
   useEffect(() => {

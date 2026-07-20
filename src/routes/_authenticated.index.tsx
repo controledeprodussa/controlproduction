@@ -12,6 +12,8 @@ import { Factory, Calendar, User, Hash, AlertTriangle, CheckCircle2, Maximize2, 
 import { format } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useNavigate } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Dashboard · Controle de Produção" }] }),

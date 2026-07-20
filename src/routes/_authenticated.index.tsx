@@ -147,7 +147,7 @@ function Dashboard() {
         </div>
       </header>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
         <StatCard label="Engenharia" value={count("engenharia")} status="engenharia" />
         <StatCard label="Compras" value={count("compras")} status="compras" />
         <StatCard label="Produção" value={count("producao")} status="producao" />
@@ -278,10 +278,10 @@ function MachineCard({ m }: { m: Machine }) {
 
 function StatCard({ label, value, status }: { label: string; value: string | number; status?: MachineStatus }) {
   return (
-    <Card className="p-5 rounded-2xl border border-border bg-card">
-      <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
+    <Card className="p-3 sm:p-5 rounded-2xl border border-border bg-card">
+      <div className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
       <div
-        className="mt-2 text-3xl font-bold"
+        className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold"
         style={status ? { color: `var(--status-${status})` } : undefined}
       >
         {value}

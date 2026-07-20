@@ -278,10 +278,10 @@ function MachineCard({ m }: { m: Machine }) {
 
 function StatCard({ label, value, status }: { label: string; value: string | number; status?: MachineStatus }) {
   return (
-    <Card className="p-5 rounded-2xl border border-border bg-card">
-      <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
+    <Card className="p-3 sm:p-5 rounded-2xl border border-border bg-card">
+      <div className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
       <div
-        className="mt-2 text-3xl font-bold"
+        className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold"
         style={status ? { color: `var(--status-${status})` } : undefined}
       >
         {value}

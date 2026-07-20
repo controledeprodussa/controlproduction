@@ -329,56 +329,63 @@ function Info({ icon: Icon, label, value, valueClass = "" }: { icon: any; label:
   );
 }
 
-function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClick: (id: string) => void }) {
+function MachineTable({ machines, onRowClick, stickyHeaderTop }: { machines: Machine[]; onRowClick: (id: string) => void; stickyHeaderTop?: string }) {
+  const sticky = !!stickyHeaderTop;
   return (
-    <Card className="rounded-2xl border border-border bg-card overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="text-center text-foreground/90">Nº de Série</TableHead>
-            <TableHead className="text-center text-foreground/90">Cliente</TableHead>
-            <TableHead className="text-center text-foreground/90">Modelo</TableHead>
-            <TableHead className="text-center text-foreground/90">Status</TableHead>
-            <TableHead className="text-center text-foreground/90">Entrega</TableHead>
-            <TableHead className="text-center text-foreground/90">Prazo</TableHead>
-            <TableHead className="text-center text-foreground/90 w-[220px]">Progresso</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {machines.map((m) => {
-            const atrasado = isAtrasado(m);
-            const progresso = Math.round(Number(m.progresso));
-            return (
-              <TableRow
-                key={m.id}
-                onClick={() => onRowClick(m.id)}
-                className="cursor-pointer"
-              >
-                <TableCell className="text-center font-medium">{m.numero_serie}</TableCell>
-                <TableCell className="text-center">{m.cliente}</TableCell>
-                <TableCell className="text-center">{m.modelo_nome ?? "—"}</TableCell>
-                <TableCell className="text-center">
-                  <div className="flex justify-center">
-                    <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
-                  </div>
-                </TableCell>
-                <TableCell className={`text-center ${atrasado ? "text-[color:var(--status-atrasado)] font-medium" : ""}`}>
-                  {format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-center"><PrazoPill atrasado={atrasado} /></div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <ProgressBar value={progresso} indicatorClassName={progressColor(progresso, atrasado)} className="flex-1" />
-                    <span className="text-xs font-semibold tabular-nums w-10 text-right">{progresso}%</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+    <Card className="rounded-2xl border border-border bg-card overflow-visible">
+      <div className="relative w-full overflow-x-auto">
+        <table className="w-full caption-bottom text-xs sm:text-sm">
+          <thead
+            className={cn("[&_tr]:border-b", sticky && "sticky z-20 bg-card")}
+            style={sticky ? { top: stickyHeaderTop } : undefined}
+          >
+            <tr className="border-b transition-colors hover:bg-transparent">
+              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90">Nº de Série</th>
+              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90">Cliente</th>
+              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90 hidden sm:table-cell">Modelo</th>
+              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90 hidden sm:table-cell">Status</th>
+              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90 hidden sm:table-cell">Entrega</th>
+              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90 hidden sm:table-cell">Prazo</th>
+              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90 w-[140px] sm:w-[220px]">Progresso</th>
+            </tr>
+          </thead>
+          <tbody className="[&_tr:last-child]:border-0">
+            {machines.map((m) => {
+              const atrasado = isAtrasado(m);
+              const progresso = Math.round(Number(m.progresso));
+              return (
+                <tr
+                  key={m.id}
+                  onClick={() => onRowClick(m.id)}
+                  className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
+                >
+                  <td className="p-2 align-middle text-center font-medium">{m.numero_serie}</td>
+                  <td className="p-2 align-middle text-center">{m.cliente}</td>
+                  <td className="p-2 align-middle text-center hidden sm:table-cell">{m.modelo_nome ?? "—"}</td>
+                  <td className="p-2 align-middle text-center hidden sm:table-cell">
+                    <div className="flex justify-center">
+                      <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
+                    </div>
+                  </td>
+                  <td className={`p-2 align-middle text-center hidden sm:table-cell ${atrasado ? "text-[color:var(--status-atrasado)] font-medium" : ""}`}>
+                    {format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
+                  </td>
+                  <td className="p-2 align-middle hidden sm:table-cell">
+                    <div className="flex justify-center"><PrazoPill atrasado={atrasado} /></div>
+                  </td>
+                  <td className="p-2 align-middle">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <ProgressBar value={progresso} indicatorClassName={progressColor(progresso, atrasado)} className="flex-1" />
+                      <span className="text-[10px] sm:text-xs font-semibold tabular-nums w-8 sm:w-10 text-right">{progresso}%</span>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </Card>
   );
 }
+

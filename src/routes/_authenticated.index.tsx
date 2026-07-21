@@ -12,8 +12,6 @@ import { Factory, Calendar, User, Hash, AlertTriangle, CheckCircle2, Maximize2, 
 import { format } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useNavigate } from "@tanstack/react-router";
-import { cn } from "@/lib/utils";
-
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Dashboard · Controle de Produção" }] }),
@@ -149,7 +147,7 @@ function Dashboard() {
         </div>
       </header>
 
-      <div className="grid grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <StatCard label="Engenharia" value={count("engenharia")} status="engenharia" />
         <StatCard label="Compras" value={count("compras")} status="compras" />
         <StatCard label="Produção" value={count("producao")} status="producao" />
@@ -180,7 +178,7 @@ function Dashboard() {
 
       {fullscreen && (
         <div className="fixed inset-0 z-50 bg-background overflow-auto">
-          <div className="sticky top-0 z-30 flex items-center justify-between gap-4 px-6 md:px-10 py-5 bg-background/95 backdrop-blur border-b border-border">
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-6 md:px-10 py-5 bg-background/95 backdrop-blur border-b border-border">
             <div className="flex items-center gap-6 min-w-0 flex-1">
               <div className="shrink-0">
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Visão Geral</h1>
@@ -207,7 +205,7 @@ function Dashboard() {
               </Button>
             </div>
           </div>
-          <div className="px-6 md:px-10 pb-6 md:pb-10 pt-2 md:pt-3">
+          <div className="p-6 md:p-10">
             {ativas.length === 0 ? (
               <Card className="p-10 text-center text-muted-foreground">
                 Nenhuma máquina em andamento.
@@ -219,12 +217,11 @@ function Dashboard() {
                 ))}
               </div>
             ) : (
-              <MachineTable machines={ativas} onRowClick={(id) => navigate({ to: "/maquinas/$id", params: { id } })} stickyHeaderTop="var(--fs-header-top, 96px)" />
+              <MachineTable machines={ativas} onRowClick={(id) => navigate({ to: "/maquinas/$id", params: { id } })} />
             )}
           </div>
         </div>
       )}
-
     </div>
   );
 }
@@ -281,10 +278,10 @@ function MachineCard({ m }: { m: Machine }) {
 
 function StatCard({ label, value, status }: { label: string; value: string | number; status?: MachineStatus }) {
   return (
-    <Card className="p-3 sm:p-5 rounded-2xl border border-border bg-card">
-      <div className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
+    <Card className="p-5 rounded-2xl border border-border bg-card">
+      <div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
       <div
-        className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold"
+        className="mt-2 text-3xl font-bold"
         style={status ? { color: `var(--status-${status})` } : undefined}
       >
         {value}
@@ -331,63 +328,56 @@ function Info({ icon: Icon, label, value, valueClass = "" }: { icon: any; label:
   );
 }
 
-function MachineTable({ machines, onRowClick, stickyHeaderTop }: { machines: Machine[]; onRowClick: (id: string) => void; stickyHeaderTop?: string }) {
-  const sticky = !!stickyHeaderTop;
+function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClick: (id: string) => void }) {
   return (
-    <Card className="rounded-2xl border border-border bg-card overflow-visible">
-      <div className="relative w-full overflow-x-auto">
-        <table className="w-full caption-bottom text-xs sm:text-sm">
-          <thead
-            className={cn("[&_tr]:border-b", sticky && "sticky z-20 bg-card")}
-            style={sticky ? { top: stickyHeaderTop } : undefined}
-          >
-            <tr className="border-b transition-colors hover:bg-transparent">
-              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90">Nº de Série</th>
-              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90">Cliente</th>
-              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90 hidden sm:table-cell">Modelo</th>
-              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90 hidden sm:table-cell">Status</th>
-              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90 hidden sm:table-cell">Entrega</th>
-              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90 hidden sm:table-cell">Prazo</th>
-              <th className="h-10 px-2 align-middle font-medium text-center text-foreground/90 w-[140px] sm:w-[220px]">Progresso</th>
-            </tr>
-          </thead>
-          <tbody className="[&_tr:last-child]:border-0">
-            {machines.map((m) => {
-              const atrasado = isAtrasado(m);
-              const progresso = Math.round(Number(m.progresso));
-              return (
-                <tr
-                  key={m.id}
-                  onClick={() => onRowClick(m.id)}
-                  className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
-                >
-                  <td className="p-2 align-middle text-center font-medium">{m.numero_serie}</td>
-                  <td className="p-2 align-middle text-center">{m.cliente}</td>
-                  <td className="p-2 align-middle text-center hidden sm:table-cell">{m.modelo_nome ?? "—"}</td>
-                  <td className="p-2 align-middle text-center hidden sm:table-cell">
-                    <div className="flex justify-center">
-                      <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
-                    </div>
-                  </td>
-                  <td className={`p-2 align-middle text-center hidden sm:table-cell ${atrasado ? "text-[color:var(--status-atrasado)] font-medium" : ""}`}>
-                    {format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
-                  </td>
-                  <td className="p-2 align-middle hidden sm:table-cell">
-                    <div className="flex justify-center"><PrazoPill atrasado={atrasado} /></div>
-                  </td>
-                  <td className="p-2 align-middle">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <ProgressBar value={progresso} indicatorClassName={progressColor(progresso, atrasado)} className="flex-1" />
-                      <span className="text-[10px] sm:text-xs font-semibold tabular-nums w-8 sm:w-10 text-right">{progresso}%</span>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+    <Card className="rounded-2xl border border-border bg-card overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="text-center text-foreground/90">Nº de Série</TableHead>
+            <TableHead className="text-center text-foreground/90">Cliente</TableHead>
+            <TableHead className="text-center text-foreground/90">Modelo</TableHead>
+            <TableHead className="text-center text-foreground/90">Status</TableHead>
+            <TableHead className="text-center text-foreground/90">Entrega</TableHead>
+            <TableHead className="text-center text-foreground/90">Prazo</TableHead>
+            <TableHead className="text-center text-foreground/90 w-[220px]">Progresso</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {machines.map((m) => {
+            const atrasado = isAtrasado(m);
+            const progresso = Math.round(Number(m.progresso));
+            return (
+              <TableRow
+                key={m.id}
+                onClick={() => onRowClick(m.id)}
+                className="cursor-pointer"
+              >
+                <TableCell className="text-center font-medium">{m.numero_serie}</TableCell>
+                <TableCell className="text-center">{m.cliente}</TableCell>
+                <TableCell className="text-center">{m.modelo_nome ?? "—"}</TableCell>
+                <TableCell className="text-center">
+                  <div className="flex justify-center">
+                    <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
+                  </div>
+                </TableCell>
+                <TableCell className={`text-center ${atrasado ? "text-[color:var(--status-atrasado)] font-medium" : ""}`}>
+                  {format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
+                </TableCell>
+                <TableCell>
+                  <div className="flex justify-center"><PrazoPill atrasado={atrasado} /></div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <ProgressBar value={progresso} indicatorClassName={progressColor(progresso, atrasado)} className="flex-1" />
+                    <span className="text-xs font-semibold tabular-nums w-10 text-right">{progresso}%</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
     </Card>
   );
 }
-

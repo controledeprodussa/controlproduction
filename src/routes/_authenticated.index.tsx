@@ -218,7 +218,7 @@ function Dashboard() {
                 ))}
               </div>
             ) : (
-              <MachineTable machines={ativas} onRowClick={(id) => navigate({ to: "/maquinas/$id", params: { id } })} />
+              <MachineTable machines={ativas} onRowClick={(id) => navigate({ to: "/maquinas/$id", params: { id } })} stickyTopClass="top-[88px] md:top-[92px]" />
             )}
           </div>
         </div>

@@ -332,15 +332,15 @@ function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClic
   return (
     <Card className="rounded-2xl border border-border bg-card overflow-hidden">
       <Table>
-        <TableHeader>
+        <TableHeader className="sticky top-0 z-10 bg-card [&_tr]:border-b [&_th]:bg-card">
           <TableRow className="hover:bg-transparent">
-            <TableHead className="text-center text-foreground/90">Nº de Série</TableHead>
-            <TableHead className="text-center text-foreground/90">Cliente</TableHead>
-            <TableHead className="text-center text-foreground/90">Modelo</TableHead>
-            <TableHead className="text-center text-foreground/90">Status</TableHead>
-            <TableHead className="text-center text-foreground/90">Entrega</TableHead>
-            <TableHead className="text-center text-foreground/90">Prazo</TableHead>
-            <TableHead className="text-center text-foreground/90 w-[220px]">Progresso</TableHead>
+            <TableHead className="text-center text-foreground/90 text-xs sm:text-sm">Nº de Série</TableHead>
+            <TableHead className="text-center text-foreground/90 text-xs sm:text-sm">Cliente</TableHead>
+            <TableHead className="hidden sm:table-cell text-center text-foreground/90">Modelo</TableHead>
+            <TableHead className="hidden sm:table-cell text-center text-foreground/90">Status</TableHead>
+            <TableHead className="hidden sm:table-cell text-center text-foreground/90">Entrega</TableHead>
+            <TableHead className="hidden sm:table-cell text-center text-foreground/90">Prazo</TableHead>
+            <TableHead className="text-center text-foreground/90 w-[140px] sm:w-[220px] text-xs sm:text-sm">Progresso</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -353,24 +353,24 @@ function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClic
                 onClick={() => onRowClick(m.id)}
                 className="cursor-pointer"
               >
-                <TableCell className="text-center font-medium">{m.numero_serie}</TableCell>
-                <TableCell className="text-center">{m.cliente}</TableCell>
-                <TableCell className="text-center">{m.modelo_nome ?? "—"}</TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center font-medium text-xs sm:text-sm">{m.numero_serie}</TableCell>
+                <TableCell className="text-center text-xs sm:text-sm">{m.cliente}</TableCell>
+                <TableCell className="hidden sm:table-cell text-center">{m.modelo_nome ?? "—"}</TableCell>
+                <TableCell className="hidden sm:table-cell text-center">
                   <div className="flex justify-center">
                     <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
                   </div>
                 </TableCell>
-                <TableCell className={`text-center ${atrasado ? "text-[color:var(--status-atrasado)] font-medium" : ""}`}>
+                <TableCell className={`hidden sm:table-cell text-center ${atrasado ? "text-[color:var(--status-atrasado)] font-medium" : ""}`}>
                   {format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   <div className="flex justify-center"><PrazoPill atrasado={atrasado} /></div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <ProgressBar value={progresso} indicatorClassName={progressColor(progresso, atrasado)} className="flex-1" />
-                    <span className="text-xs font-semibold tabular-nums w-10 text-right">{progresso}%</span>
+                    <span className="text-[10px] sm:text-xs font-semibold tabular-nums w-8 sm:w-10 text-right">{progresso}%</span>
                   </div>
                 </TableCell>
               </TableRow>
@@ -381,3 +381,4 @@ function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClic
     </Card>
   );
 }
+

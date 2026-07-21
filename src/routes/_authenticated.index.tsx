@@ -205,7 +205,7 @@ function Dashboard() {
               </Button>
             </div>
           </div>
-          <div className="p-6 md:p-10">
+          <div className="px-6 md:px-10 pb-6 md:pb-10 pt-3 md:pt-4">
             {ativas.length === 0 ? (
               <Card className="p-10 text-center text-muted-foreground">
                 Nenhuma máquina em andamento.

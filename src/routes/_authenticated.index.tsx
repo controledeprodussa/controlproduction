@@ -334,13 +334,13 @@ function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClic
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="text-center text-foreground/90">Nº de Série</TableHead>
-            <TableHead className="text-center text-foreground/90">Cliente</TableHead>
-            <TableHead className="text-center text-foreground/90">Modelo</TableHead>
-            <TableHead className="text-center text-foreground/90">Status</TableHead>
-            <TableHead className="text-center text-foreground/90">Entrega</TableHead>
-            <TableHead className="text-center text-foreground/90">Prazo</TableHead>
-            <TableHead className="text-center text-foreground/90 w-[220px]">Progresso</TableHead>
+            <TableHead className="text-center text-foreground/90 text-sm md:text-base">Nº de Série</TableHead>
+            <TableHead className="text-center text-foreground/90 text-sm md:text-base">Cliente</TableHead>
+            <TableHead className="text-center text-foreground/90 hidden md:table-cell">Modelo</TableHead>
+            <TableHead className="text-center text-foreground/90 hidden md:table-cell">Status</TableHead>
+            <TableHead className="text-center text-foreground/90 hidden md:table-cell">Entrega</TableHead>
+            <TableHead className="text-center text-foreground/90 hidden md:table-cell">Prazo</TableHead>
+            <TableHead className="text-center text-foreground/90 w-[140px] md:w-[220px]">Progresso</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -353,24 +353,24 @@ function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClic
                 onClick={() => onRowClick(m.id)}
                 className="cursor-pointer"
               >
-                <TableCell className="text-center font-medium">{m.numero_serie}</TableCell>
-                <TableCell className="text-center">{m.cliente}</TableCell>
-                <TableCell className="text-center">{m.modelo_nome ?? "—"}</TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center font-medium text-sm md:text-base">{m.numero_serie}</TableCell>
+                <TableCell className="text-center text-sm md:text-base">{m.cliente}</TableCell>
+                <TableCell className="text-center hidden md:table-cell">{m.modelo_nome ?? "—"}</TableCell>
+                <TableCell className="text-center hidden md:table-cell">
                   <div className="flex justify-center">
                     <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
                   </div>
                 </TableCell>
-                <TableCell className={`text-center ${atrasado ? "text-[color:var(--status-atrasado)] font-medium" : ""}`}>
+                <TableCell className={`text-center hidden md:table-cell ${atrasado ? "text-[color:var(--status-atrasado)] font-medium" : ""}`}>
                   {format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">
                   <div className="flex justify-center"><PrazoPill atrasado={atrasado} /></div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 md:gap-3">
                     <ProgressBar value={progresso} indicatorClassName={progressColor(progresso, atrasado)} className="flex-1" />
-                    <span className="text-xs font-semibold tabular-nums w-10 text-right">{progresso}%</span>
+                    <span className="text-xs font-semibold tabular-nums w-8 md:w-10 text-right">{progresso}%</span>
                   </div>
                 </TableCell>
               </TableRow>

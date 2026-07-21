@@ -329,11 +329,12 @@ function Info({ icon: Icon, label, value, valueClass = "" }: { icon: any; label:
   );
 }
 
-function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClick: (id: string) => void }) {
+function MachineTable({ machines, onRowClick, stickyTopClass = "top-0" }: { machines: Machine[]; onRowClick: (id: string) => void; stickyTopClass?: string }) {
   return (
     <Card className="rounded-2xl border border-border bg-card overflow-hidden">
       <Table>
-        <TableHeader className="sticky top-0 z-10 bg-card [&_tr]:border-b [&_th]:bg-card">
+        <TableHeader className={`sticky ${stickyTopClass} z-10 bg-card [&_tr]:border-b [&_th]:bg-card`}>
+
           <TableRow className="hover:bg-transparent">
             <TableHead className="text-center text-foreground/90 text-xs sm:text-sm">Nº de Série</TableHead>
             <TableHead className="text-center text-foreground/90 text-xs sm:text-sm">Cliente</TableHead>

@@ -2,6 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { registrarManutencaoManual } from "@/lib/manutencao-manual.functions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -9,13 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProgressBar } from "@/components/ProgressBar";
 import { STATUS_LABEL, STATUS_ORDER, statusClasses, progressColor, parseLocalDate, type MachineStatus } from "@/lib/status";
-import { ArrowLeft, Calendar, User, Hash, Factory, Pencil, ChevronDown, MessageSquare, Trash2, Wrench, ExternalLink } from "lucide-react";
+import { ArrowLeft, Calendar, User, Hash, Factory, Pencil, ChevronDown, MessageSquare, Trash2, Wrench, ExternalLink, Plus, FileText, Link2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -43,6 +45,7 @@ function MachineDetail() {
   const [deleting, setDeleting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState("checklist");
+  const [registrando, setRegistrando] = useState(false);
 
   const { data: machine } = useQuery({
     queryKey: ["machine", id],
@@ -224,9 +227,14 @@ function MachineDetail() {
         {machine.status === "entregue" && (
           <TabsContent value="manutencoes">
             <Card className="p-6 rounded-2xl space-y-4">
-              <div>
-                <h2 className="text-lg font-semibold">Manutenções</h2>
-                <p className="text-sm text-muted-foreground">Histórico de visitas técnicas desta máquina.</p>
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <h2 className="text-lg font-semibold">Manutenções</h2>
+                  <p className="text-sm text-muted-foreground">Histórico de visitas técnicas desta máquina.</p>
+                </div>
+                <Button size="sm" onClick={() => setRegistrando(true)} className="gap-1.5">
+                  <Plus className="size-4" /> Registrar manutenção
+                </Button>
               </div>
               <div className="space-y-4">
                 {manutencoes.map((m) => (
@@ -240,6 +248,12 @@ function MachineDetail() {
           </TabsContent>
         )}
       </Tabs>
+
+      <RegistrarManutencaoDialog
+        open={registrando}
+        onOpenChange={setRegistrando}
+        numeroSerie={machine.numero_serie}
+      />
 
       <EditMachineDialog open={editing} onOpenChange={setEditing} machine={machine} />
 
@@ -528,3 +542,123 @@ function InfoBlock({ icon: Icon, label, value, valueClass = "" }: { icon: any; l
     </div>
   );
 }
+
+function RegistrarManutencaoDialog({
+  open,
+  onOpenChange,
+  numeroSerie,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  numeroSerie: string;
+}) {
+  const qc = useQueryClient();
+  const registrar = useServerFn(registrarManutencaoManual);
+  const [mode, setMode] = useState<"link" | "pdf">("link");
+  const [link, setLink] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      setLink("");
+      setFile(null);
+      setMode("link");
+      setLoading(false);
+    }
+  }, [open]);
+
+  const submit = async () => {
+    setLoading(true);
+    try {
+      let payload: { link?: string; pdfBase64?: string; pdfFilename?: string };
+      if (mode === "link") {
+        if (!link.trim()) throw new Error("Cole um link do Google Docs");
+        payload = { link: link.trim() };
+      } else {
+        if (!file) throw new Error("Selecione um arquivo PDF");
+        const buf = await file.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+        let bin = "";
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        const b64 = btoa(bin);
+        payload = { pdfBase64: b64, pdfFilename: file.name };
+      }
+      const res = await registrar({ data: payload });
+      toast.success(
+        res.criadas > 1
+          ? `${res.criadas} manutenções registradas`
+          : "Manutenção registrada",
+      );
+      qc.invalidateQueries({ queryKey: ["manutencoes", numeroSerie] });
+      qc.invalidateQueries({ queryKey: ["manutencoes"] });
+      onOpenChange(false);
+    } catch (e: any) {
+      toast.error(e.message ?? "Erro ao registrar manutenção");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !loading && onOpenChange(v)}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Registrar manutenção</DialogTitle>
+          <DialogDescription>
+            Envie o relatório em PDF ou cole o link do Google Docs. Os dados serão extraídos automaticamente.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            variant={mode === "link" ? "default" : "outline"}
+            onClick={() => setMode("link")}
+            className="gap-1.5"
+          >
+            <Link2 className="size-4" /> Google Docs
+          </Button>
+          <Button
+            type="button"
+            variant={mode === "pdf" ? "default" : "outline"}
+            onClick={() => setMode("pdf")}
+            className="gap-1.5"
+          >
+            <FileText className="size-4" /> PDF
+          </Button>
+        </div>
+
+        {mode === "link" ? (
+          <div className="space-y-2">
+            <Label>Link do Google Docs</Label>
+            <Input
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="https://docs.google.com/document/d/..."
+            />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Label>Arquivo PDF</Label>
+            <Input
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+            Cancelar
+          </Button>
+          <Button onClick={submit} disabled={loading}>
+            {loading ? "Processando…" : "Registrar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+

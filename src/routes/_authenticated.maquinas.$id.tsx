@@ -2,6 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { registrarManutencaoManual } from "@/lib/manutencao-manual.functions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -9,13 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProgressBar } from "@/components/ProgressBar";
 import { STATUS_LABEL, STATUS_ORDER, statusClasses, progressColor, parseLocalDate, type MachineStatus } from "@/lib/status";
-import { ArrowLeft, Calendar, User, Hash, Factory, Pencil, ChevronDown, MessageSquare, Trash2, Wrench, ExternalLink } from "lucide-react";
+import { ArrowLeft, Calendar, User, Hash, Factory, Pencil, ChevronDown, MessageSquare, Trash2, Wrench, ExternalLink, Plus, FileText, Link2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -43,6 +45,7 @@ function MachineDetail() {
   const [deleting, setDeleting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState("checklist");
+  const [registrando, setRegistrando] = useState(false);
 
   const { data: machine } = useQuery({
     queryKey: ["machine", id],
@@ -224,9 +227,14 @@ function MachineDetail() {
         {machine.status === "entregue" && (
           <TabsContent value="manutencoes">
             <Card className="p-6 rounded-2xl space-y-4">
-              <div>
-                <h2 className="text-lg font-semibold">Manutenções</h2>
-                <p className="text-sm text-muted-foreground">Histórico de visitas técnicas desta máquina.</p>
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <h2 className="text-lg font-semibold">Manutenções</h2>
+                  <p className="text-sm text-muted-foreground">Histórico de visitas técnicas desta máquina.</p>
+                </div>
+                <Button size="sm" onClick={() => setRegistrando(true)} className="gap-1.5">
+                  <Plus className="size-4" /> Registrar manutenção
+                </Button>
               </div>
               <div className="space-y-4">
                 {manutencoes.map((m) => (
@@ -239,6 +247,13 @@ function MachineDetail() {
             </Card>
           </TabsContent>
         )}
+      </Tabs>
+
+      <RegistrarManutencaoDialog
+        open={registrando}
+        onOpenChange={setRegistrando}
+        numeroSerie={machine.numero_serie}
+      />
       </Tabs>
 
       <EditMachineDialog open={editing} onOpenChange={setEditing} machine={machine} />

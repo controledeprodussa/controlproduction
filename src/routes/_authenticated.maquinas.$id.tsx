@@ -254,7 +254,6 @@ function MachineDetail() {
         onOpenChange={setRegistrando}
         numeroSerie={machine.numero_serie}
       />
-      </Tabs>
 
       <EditMachineDialog open={editing} onOpenChange={setEditing} machine={machine} />
 

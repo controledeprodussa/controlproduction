@@ -10,8 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, Pencil, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, Pencil, GripVertical } from "lucide-react";
 import { toast } from "sonner";
+import { DndContext, closestCenter, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export const Route = createFileRoute("/_authenticated/modelos")({
   head: () => ({ meta: [{ title: "Modelos · Controle de Produção" }] }),
@@ -150,19 +153,35 @@ function ModelosList() {
     qc.invalidateQueries({ queryKey: ["models-full"] });
   };
 
-  const move = async (index: number, dir: -1 | 1) => {
-    const target = index + dir;
-    if (target < 0 || target >= models.length) return;
-    const a = models[index] as any;
-    const b = models[target] as any;
-    const aOrdem = Number(a.ordem ?? index);
-    const bOrdem = Number(b.ordem ?? target);
-    const { error: e1 } = await supabase.from("machine_models").update({ ordem: bOrdem }).eq("id", a.id);
-    if (e1) return toast.error(e1.message);
-    const { error: e2 } = await supabase.from("machine_models").update({ ordem: aOrdem }).eq("id", b.id);
-    if (e2) return toast.error(e2.message);
-    qc.invalidateQueries({ queryKey: ["models"] });
-    qc.invalidateQueries({ queryKey: ["models-full"] });
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const onDragEnd = async (e: DragEndEvent) => {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    const oldIndex = models.findIndex((m: any) => m.id === active.id);
+    const newIndex = models.findIndex((m: any) => m.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const reordered = arrayMove(models as any[], oldIndex, newIndex);
+
+    // Optimistic update
+    qc.setQueryData(["models-full"], reordered.map((m, i) => ({ ...m, ordem: i })));
+
+    try {
+      await Promise.all(
+        reordered.map((m: any, i: number) =>
+          supabase.from("machine_models").update({ ordem: i }).eq("id", m.id),
+        ),
+      );
+      qc.invalidateQueries({ queryKey: ["models"] });
+      qc.invalidateQueries({ queryKey: ["models-full"] });
+    } catch (err: any) {
+      toast.error(err.message ?? "Erro ao reordenar");
+      qc.invalidateQueries({ queryKey: ["models-full"] });
+    }
   };
 
   const remove = async () => {
@@ -181,47 +200,26 @@ function ModelosList() {
     <Card className="p-6 rounded-2xl space-y-4">
       <div>
         <h2 className="text-lg font-semibold">Modelos cadastrados</h2>
-        <p className="text-xs text-muted-foreground mt-1">Use o interruptor para definir se o modelo aparece no registro. Use as setas para reordenar como eles aparecem no seletor.</p>
+        <p className="text-xs text-muted-foreground mt-1">Use o interruptor para definir se o modelo aparece no registro. Arraste pelo ícone <GripVertical className="inline size-3 -mt-0.5" /> para reordenar como eles aparecem no seletor.</p>
       </div>
       {models.length === 0 ? (
         <div className="text-sm text-muted-foreground">Nenhum modelo cadastrado ainda.</div>
       ) : (
-        <div className="space-y-2">
-          {models.map((m: any, i: number) => (
-            <div key={m.id} className="flex items-center justify-between gap-3 p-4 rounded-xl border border-border bg-secondary/40">
-              <div className="flex flex-col">
-                <Button variant="ghost" size="icon" className="h-6 w-6" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Mover para cima">
-                  <ArrowUp className="size-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-6 w-6" disabled={i === models.length - 1} onClick={() => move(i, 1)} aria-label="Mover para baixo">
-                  <ArrowDown className="size-4" />
-                </Button>
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="font-medium truncate">{m.nome}</div>
-                <div className="text-xs text-muted-foreground truncate">
-                  {m.processos.length} processo{m.processos.length === 1 ? "" : "s"} · {m.processos.map((p: any) => p.nome).join(", ") || "—"}
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <Switch checked={!!m.visivel_registro} onCheckedChange={(v) => toggleVisivel(m, v)} aria-label="Visível no registro" />
-                  <span className="text-xs text-muted-foreground hidden sm:inline">
-                    {m.visivel_registro ? "Visível" : "Oculto"}
-                  </span>
-                </div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => setEditing(m)} aria-label="Editar modelo">
-                    <Pencil className="size-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => setDeleting(m)} aria-label="Excluir modelo">
-                    <Trash2 className="size-4 text-[color:var(--status-atrasado)]" />
-                  </Button>
-                </div>
-              </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext items={models.map((m: any) => m.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {models.map((m: any) => (
+                <SortableModelRow
+                  key={m.id}
+                  model={m}
+                  onToggleVisivel={(v) => toggleVisivel(m, v)}
+                  onEdit={() => setEditing(m)}
+                  onDelete={() => setDeleting(m)}
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {editing && <EditModelDialog model={editing} onClose={() => setEditing(null)} />}
@@ -241,6 +239,65 @@ function ModelosList() {
         </AlertDialogContent>
       </AlertDialog>
     </Card>
+  );
+}
+
+function SortableModelRow({
+  model: m,
+  onToggleVisivel,
+  onEdit,
+  onDelete,
+}: {
+  model: any;
+  onToggleVisivel: (v: boolean) => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: m.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+    zIndex: isDragging ? 10 : "auto" as const,
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between gap-3 p-4 rounded-xl border border-border bg-secondary/40"
+    >
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        aria-label="Arrastar para reordenar"
+        className="touch-none cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1 -ml-1"
+      >
+        <GripVertical className="size-5" />
+      </button>
+      <div className="min-w-0 flex-1">
+        <div className="font-medium truncate">{m.nome}</div>
+        <div className="text-xs text-muted-foreground truncate">
+          {m.processos.length} processo{m.processos.length === 1 ? "" : "s"} · {m.processos.map((p: any) => p.nome).join(", ") || "—"}
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <Switch checked={!!m.visivel_registro} onCheckedChange={onToggleVisivel} aria-label="Visível no registro" />
+          <span className="text-xs text-muted-foreground hidden sm:inline">
+            {m.visivel_registro ? "Visível" : "Oculto"}
+          </span>
+        </div>
+        <div className="flex gap-1">
+          <Button variant="ghost" size="icon" onClick={onEdit} aria-label="Editar modelo">
+            <Pencil className="size-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={onDelete} aria-label="Excluir modelo">
+            <Trash2 className="size-4 text-[color:var(--status-atrasado)]" />
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -242,6 +242,65 @@ function ModelosList() {
   );
 }
 
+function SortableModelRow({
+  model: m,
+  onToggleVisivel,
+  onEdit,
+  onDelete,
+}: {
+  model: any;
+  onToggleVisivel: (v: boolean) => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: m.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+    zIndex: isDragging ? 10 : "auto" as const,
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between gap-3 p-4 rounded-xl border border-border bg-secondary/40"
+    >
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        aria-label="Arrastar para reordenar"
+        className="touch-none cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1 -ml-1"
+      >
+        <GripVertical className="size-5" />
+      </button>
+      <div className="min-w-0 flex-1">
+        <div className="font-medium truncate">{m.nome}</div>
+        <div className="text-xs text-muted-foreground truncate">
+          {m.processos.length} processo{m.processos.length === 1 ? "" : "s"} · {m.processos.map((p: any) => p.nome).join(", ") || "—"}
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <Switch checked={!!m.visivel_registro} onCheckedChange={onToggleVisivel} aria-label="Visível no registro" />
+          <span className="text-xs text-muted-foreground hidden sm:inline">
+            {m.visivel_registro ? "Visível" : "Oculto"}
+          </span>
+        </div>
+        <div className="flex gap-1">
+          <Button variant="ghost" size="icon" onClick={onEdit} aria-label="Editar modelo">
+            <Pencil className="size-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={onDelete} aria-label="Excluir modelo">
+            <Trash2 className="size-4 text-[color:var(--status-atrasado)]" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function EditModelDialog({ model, onClose }: { model: any; onClose: () => void }) {
   const qc = useQueryClient();
   const [nome, setNome] = useState(model.nome);

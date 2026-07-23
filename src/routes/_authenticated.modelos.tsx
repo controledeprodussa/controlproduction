@@ -133,7 +133,7 @@ function ModelosList() {
   const { data: models = [] } = useQuery({
     queryKey: ["models-full"],
     queryFn: async () => {
-      const { data: ms, error } = await supabase.from("machine_models").select("id, nome, created_at, visivel_registro").order("created_at", { ascending: false });
+      const { data: ms, error } = await supabase.from("machine_models").select("id, nome, created_at, visivel_registro, ordem").order("ordem", { ascending: true }).order("created_at", { ascending: true });
       if (error) throw error;
       const { data: tpls } = await supabase.from("machine_process_templates").select("*").order("ordem");
       return (ms ?? []).map((m) => ({ ...m, processos: (tpls ?? []).filter((t) => t.model_id === m.id) }));
@@ -144,6 +144,21 @@ function ModelosList() {
     const { error } = await supabase.from("machine_models").update({ visivel_registro: value }).eq("id", m.id);
     if (error) return toast.error(error.message);
     toast.success(value ? "Modelo visível no registro" : "Modelo oculto no registro");
+    qc.invalidateQueries({ queryKey: ["models"] });
+    qc.invalidateQueries({ queryKey: ["models-full"] });
+  };
+
+  const move = async (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= models.length) return;
+    const a = models[index] as any;
+    const b = models[target] as any;
+    const aOrdem = Number(a.ordem ?? index);
+    const bOrdem = Number(b.ordem ?? target);
+    const { error: e1 } = await supabase.from("machine_models").update({ ordem: bOrdem }).eq("id", a.id);
+    if (e1) return toast.error(e1.message);
+    const { error: e2 } = await supabase.from("machine_models").update({ ordem: aOrdem }).eq("id", b.id);
+    if (e2) return toast.error(e2.message);
     qc.invalidateQueries({ queryKey: ["models"] });
     qc.invalidateQueries({ queryKey: ["models-full"] });
   };

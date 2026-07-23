@@ -84,7 +84,7 @@ function MaquinaForm() {
         .from("machine_models")
         .select("id, nome")
         .eq("visivel_registro", true)
-        .order("created_at", { ascending: false });
+        .order("ordem", { ascending: true });
       if (error) throw error;
       return data;
     },

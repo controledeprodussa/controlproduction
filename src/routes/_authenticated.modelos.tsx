@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, Pencil } from "lucide-react";
+import { Plus, Trash2, Pencil, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/modelos")({
@@ -93,7 +93,9 @@ function ModeloForm() {
     setSaving(true);
     try {
       if (!companyId) throw new Error("Empresa do usuário não encontrada");
-      const { data: model, error } = await supabase.from("machine_models").insert({ nome, company_id: companyId }).select().single();
+      const { data: maxRow } = await supabase.from("machine_models").select("ordem").order("ordem", { ascending: false }).limit(1).maybeSingle();
+      const nextOrdem = (maxRow?.ordem ?? -1) + 1;
+      const { data: model, error } = await supabase.from("machine_models").insert({ nome, company_id: companyId, ordem: nextOrdem }).select().single();
       if (error) throw error;
       const rows = processos.map((p, i) => ({ model_id: model.id, nome: p.nome, peso: p.peso, ordem: i }));
       const { error: e2 } = await supabase.from("machine_process_templates").insert(rows);
@@ -133,7 +135,7 @@ function ModelosList() {
   const { data: models = [] } = useQuery({
     queryKey: ["models-full"],
     queryFn: async () => {
-      const { data: ms, error } = await supabase.from("machine_models").select("id, nome, created_at, visivel_registro").order("created_at", { ascending: false });
+      const { data: ms, error } = await supabase.from("machine_models").select("id, nome, created_at, visivel_registro, ordem").order("ordem", { ascending: true }).order("created_at", { ascending: true });
       if (error) throw error;
       const { data: tpls } = await supabase.from("machine_process_templates").select("*").order("ordem");
       return (ms ?? []).map((m) => ({ ...m, processos: (tpls ?? []).filter((t) => t.model_id === m.id) }));
@@ -144,6 +146,21 @@ function ModelosList() {
     const { error } = await supabase.from("machine_models").update({ visivel_registro: value }).eq("id", m.id);
     if (error) return toast.error(error.message);
     toast.success(value ? "Modelo visível no registro" : "Modelo oculto no registro");
+    qc.invalidateQueries({ queryKey: ["models"] });
+    qc.invalidateQueries({ queryKey: ["models-full"] });
+  };
+
+  const move = async (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= models.length) return;
+    const a = models[index] as any;
+    const b = models[target] as any;
+    const aOrdem = Number(a.ordem ?? index);
+    const bOrdem = Number(b.ordem ?? target);
+    const { error: e1 } = await supabase.from("machine_models").update({ ordem: bOrdem }).eq("id", a.id);
+    if (e1) return toast.error(e1.message);
+    const { error: e2 } = await supabase.from("machine_models").update({ ordem: aOrdem }).eq("id", b.id);
+    if (e2) return toast.error(e2.message);
     qc.invalidateQueries({ queryKey: ["models"] });
     qc.invalidateQueries({ queryKey: ["models-full"] });
   };
@@ -164,14 +181,22 @@ function ModelosList() {
     <Card className="p-6 rounded-2xl space-y-4">
       <div>
         <h2 className="text-lg font-semibold">Modelos cadastrados</h2>
-        <p className="text-xs text-muted-foreground mt-1">Use o interruptor para definir se o modelo aparece no campo de seleção do registro de máquinas.</p>
+        <p className="text-xs text-muted-foreground mt-1">Use o interruptor para definir se o modelo aparece no registro. Use as setas para reordenar como eles aparecem no seletor.</p>
       </div>
       {models.length === 0 ? (
         <div className="text-sm text-muted-foreground">Nenhum modelo cadastrado ainda.</div>
       ) : (
         <div className="space-y-2">
-          {models.map((m: any) => (
+          {models.map((m: any, i: number) => (
             <div key={m.id} className="flex items-center justify-between gap-3 p-4 rounded-xl border border-border bg-secondary/40">
+              <div className="flex flex-col">
+                <Button variant="ghost" size="icon" className="h-6 w-6" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Mover para cima">
+                  <ArrowUp className="size-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-6 w-6" disabled={i === models.length - 1} onClick={() => move(i, 1)} aria-label="Mover para baixo">
+                  <ArrowDown className="size-4" />
+                </Button>
+              </div>
               <div className="min-w-0 flex-1">
                 <div className="font-medium truncate">{m.nome}</div>
                 <div className="text-xs text-muted-foreground truncate">

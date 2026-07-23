@@ -38,6 +38,7 @@ export type Database = {
           created_at: string
           id: string
           nome: string
+          ordem: number
           visivel_registro: boolean
         }
         Insert: {
@@ -45,6 +46,7 @@ export type Database = {
           created_at?: string
           id?: string
           nome: string
+          ordem?: number
           visivel_registro?: boolean
         }
         Update: {
@@ -52,6 +54,7 @@ export type Database = {
           created_at?: string
           id?: string
           nome?: string
+          ordem?: number
           visivel_registro?: boolean
         }
         Relationships: [

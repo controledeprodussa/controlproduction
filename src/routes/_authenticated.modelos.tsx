@@ -93,7 +93,9 @@ function ModeloForm() {
     setSaving(true);
     try {
       if (!companyId) throw new Error("Empresa do usuário não encontrada");
-      const { data: model, error } = await supabase.from("machine_models").insert({ nome, company_id: companyId }).select().single();
+      const { data: maxRow } = await supabase.from("machine_models").select("ordem").order("ordem", { ascending: false }).limit(1).maybeSingle();
+      const nextOrdem = (maxRow?.ordem ?? -1) + 1;
+      const { data: model, error } = await supabase.from("machine_models").insert({ nome, company_id: companyId, ordem: nextOrdem }).select().single();
       if (error) throw error;
       const rows = processos.map((p, i) => ({ model_id: model.id, nome: p.nome, peso: p.peso, ordem: i }));
       const { error: e2 } = await supabase.from("machine_process_templates").insert(rows);

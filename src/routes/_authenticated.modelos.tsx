@@ -179,14 +179,22 @@ function ModelosList() {
     <Card className="p-6 rounded-2xl space-y-4">
       <div>
         <h2 className="text-lg font-semibold">Modelos cadastrados</h2>
-        <p className="text-xs text-muted-foreground mt-1">Use o interruptor para definir se o modelo aparece no campo de seleção do registro de máquinas.</p>
+        <p className="text-xs text-muted-foreground mt-1">Use o interruptor para definir se o modelo aparece no registro. Use as setas para reordenar como eles aparecem no seletor.</p>
       </div>
       {models.length === 0 ? (
         <div className="text-sm text-muted-foreground">Nenhum modelo cadastrado ainda.</div>
       ) : (
         <div className="space-y-2">
-          {models.map((m: any) => (
+          {models.map((m: any, i: number) => (
             <div key={m.id} className="flex items-center justify-between gap-3 p-4 rounded-xl border border-border bg-secondary/40">
+              <div className="flex flex-col">
+                <Button variant="ghost" size="icon" className="h-6 w-6" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Mover para cima">
+                  <ArrowUp className="size-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-6 w-6" disabled={i === models.length - 1} onClick={() => move(i, 1)} aria-label="Mover para baixo">
+                  <ArrowDown className="size-4" />
+                </Button>
+              </div>
               <div className="min-w-0 flex-1">
                 <div className="font-medium truncate">{m.nome}</div>
                 <div className="text-xs text-muted-foreground truncate">

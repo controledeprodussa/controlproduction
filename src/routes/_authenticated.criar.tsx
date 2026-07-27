@@ -155,15 +155,15 @@ function MaquinaForm() {
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Nome da Máquina</Label>
-          <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Ex: CNC 500" className="bg-secondary border-border h-11" />
+          <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Ex: CE 01" className="bg-secondary border-border h-11" />
         </div>
         <div className="space-y-2">
           <Label>Número de Série</Label>
-          <Input value={form.numero_serie} onChange={(e) => setForm({ ...form, numero_serie: e.target.value })} placeholder="CN500-00012" className="bg-secondary border-border h-11" />
+          <Input value={form.numero_serie} onChange={(e) => setForm({ ...form, numero_serie: e.target.value })} placeholder="555" className="bg-secondary border-border h-11" />
         </div>
         <div className="space-y-2">
           <Label>Cliente</Label>
-          <Input value={form.cliente} onChange={(e) => setForm({ ...form, cliente: e.target.value })} placeholder="Metalúrgica Alfa" className="bg-secondary border-border h-11" />
+          <Input value={form.cliente} onChange={(e) => setForm({ ...form, cliente: e.target.value })} placeholder="" className="bg-secondary border-border h-11" />
         </div>
         <div className="space-y-2">
           <Label>Data de Entrega</Label>

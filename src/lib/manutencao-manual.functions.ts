@@ -107,10 +107,11 @@ export const registrarManutencaoManual = createServerFn({ method: "POST" })
       throw new Error("Não foi possível extrair texto do documento");
     }
 
-    // Remove a seção de assinatura (e qualquer conteúdo depois dela)
+    // Remove a seção de assinatura e o rodapé de faturamento (e qualquer conteúdo depois deles)
     texto = texto
       .split(/\n?\s*_{3,}\s*\n/)[0]
       .split(/\n\s*Assinatura\s+do\s+Respons[aá]vel[^\n]*/i)[0]
+      .split(/Este\s+relatório\s+solicita\s+confirmação\s+para\s+faturamento/i)[0]
       .replace(/\s+$/g, "");
 
     const cliente = extractField(texto, "Cliente");

@@ -9,8 +9,11 @@ type Input = {
 
 function parseDataVisita(raw: string): string {
   const s = raw.trim();
-  // DD/MM/YYYY or DD-MM-YYYY
-  const m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  // ISO já formatada
+  const iso = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+  // Primeira data DD/MM/YYYY encontrada (suporta intervalos como "02/03/2026 até 06/03/2026")
+  const m = s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
   if (m) {
     const dd = m[1].padStart(2, "0");
     const mm = m[2].padStart(2, "0");
@@ -18,9 +21,6 @@ function parseDataVisita(raw: string): string {
     if (yyyy.length === 2) yyyy = "20" + yyyy;
     return `${yyyy}-${mm}-${dd}`;
   }
-  // Already ISO?
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  // Fallback: today
   return new Date().toISOString().slice(0, 10);
 }
 

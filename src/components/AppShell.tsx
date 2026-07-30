@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, PlusCircle, Cog, Menu, X, Factory, Wrench, LogOut, Users } from "lucide-react";
+import { LayoutDashboard, PlusCircle, Cog, Menu, X, Factory, Wrench, LogOut, Users, LifeBuoy } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { GlobalSearch } from "@/components/GlobalSearch";
@@ -11,6 +11,7 @@ const baseNav = [
   { to: "/criar", label: "Registrar Máquina", icon: PlusCircle, exact: false },
   { to: "/modelos", label: "Modelos", icon: Wrench, exact: false },
   { to: "/maquinas", label: "Máquinas", icon: Cog, exact: false },
+  { to: "/manutencoes", label: "Manutenções", icon: LifeBuoy, exact: false },
 ];
 const adminNav = [
   { to: "/usuarios", label: "Usuários", icon: Users, exact: false },

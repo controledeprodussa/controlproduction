@@ -80,6 +80,37 @@ function ManutencoesDashboard() {
     },
   });
 
+  const { data: tecnicoRows = [] } = useQuery({
+    queryKey: ["manutencao-tecnicos"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("manutencao_tecnicos")
+        .select("manutencao_id, tecnico");
+      if (error) throw error;
+      return data as { manutencao_id: string; tecnico: string }[];
+    },
+  });
+
+  // manutencao_id -> lista de técnicos (fallback: campo tecnico da manutenção)
+  const tecnicosPorManutencao = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const r of tecnicoRows) {
+      const nome = (r.tecnico ?? "").trim();
+      if (!nome) continue;
+      const arr = map.get(r.manutencao_id) ?? [];
+      if (!arr.includes(nome)) arr.push(nome);
+      map.set(r.manutencao_id, arr);
+    }
+    return map;
+  }, [tecnicoRows]);
+
+  const tecnicosDe = (m: Manutencao) => {
+    const list = tecnicosPorManutencao.get(m.id);
+    if (list && list.length) return list;
+    const fallback = (m.tecnico ?? "").trim();
+    return fallback ? [fallback] : [];
+  };
+
   const [de, setDe] = useState("");
   const [ate, setAte] = useState("");
   const [cliente, setCliente] = useState("todos");
@@ -87,23 +118,26 @@ function ManutencoesDashboard() {
   const [page, setPage] = useState(0);
 
   const clientes = useMemo(
-    () => Array.from(new Set(all.map((m) => m.cliente).filter(Boolean))).sort(),
+    () =>
+      Array.from(
+        new Set(all.map((m) => (m.cliente ?? "").trim().toUpperCase()).filter(Boolean)),
+      ).sort(),
     [all],
   );
   const tecnicos = useMemo(
-    () => Array.from(new Set(all.map((m) => m.tecnico).filter(Boolean))).sort(),
-    [all],
+    () => Array.from(new Set(all.flatMap((m) => tecnicosDe(m)))).sort(),
+    [all, tecnicosPorManutencao],
   );
 
   const rows = useMemo(() => {
     return all.filter((m) => {
       if (de && m.data_visita < de) return false;
       if (ate && m.data_visita > ate) return false;
-      if (cliente !== "todos" && m.cliente !== cliente) return false;
-      if (tecnico !== "todos" && m.tecnico !== tecnico) return false;
+      if (cliente !== "todos" && (m.cliente ?? "").trim().toUpperCase() !== cliente) return false;
+      if (tecnico !== "todos" && !tecnicosDe(m).includes(tecnico)) return false;
       return true;
     });
-  }, [all, de, ate, cliente, tecnico]);
+  }, [all, de, ate, cliente, tecnico, tecnicosPorManutencao]);
 
   const ultimos30 = useMemo(() => {
     const limite = new Date();
@@ -112,7 +146,10 @@ function ManutencoesDashboard() {
   }, [rows]);
 
   const maquinas = useMemo(() => new Set(rows.map((m) => m.numero_serie)).size, [rows]);
-  const totalTecnicos = useMemo(() => new Set(rows.map((m) => m.tecnico)).size, [rows]);
+  const totalTecnicos = useMemo(
+    () => new Set(rows.flatMap((m) => tecnicosDe(m))).size,
+    [rows, tecnicosPorManutencao],
+  );
 
   const porMes = useMemo(() => {
     const base = startOfMonth(subMonths(new Date(), 11));
@@ -137,12 +174,25 @@ function ManutencoesDashboard() {
       .slice(0, 10);
   };
 
-  const topClientes = useMemo(() => topBy((m) => m.cliente || "—"), [rows]);
-  const topMaquinas = useMemo(
-    () => topBy((m) => `${m.numero_serie} · ${m.cliente}`),
+  const topClientes = useMemo(
+    () => topBy((m) => (m.cliente ?? "").trim().toUpperCase() || "—"),
     [rows],
   );
-  const porTecnico = useMemo(() => topBy((m) => m.tecnico || "—"), [rows]);
+  const topMaquinas = useMemo(
+    () => topBy((m) => `${m.numero_serie} · ${(m.cliente ?? "").trim().toUpperCase()}`),
+    [rows],
+  );
+  const porTecnico = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const m of rows) {
+      const list = tecnicosDe(m);
+      if (!list.length) map.set("—", (map.get("—") ?? 0) + 1);
+      for (const t of list) map.set(t, (map.get(t) ?? 0) + 1);
+    }
+    return Array.from(map, ([name, total]) => ({ name, total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+  }, [rows, tecnicosPorManutencao]);
 
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const pageSafe = Math.min(page, totalPages - 1);
@@ -280,7 +330,9 @@ function ManutencoesDashboard() {
                           <div className="font-medium">{m.numero_serie}</div>
                           <div className="text-xs text-muted-foreground truncate max-w-[180px]">{m.cliente}</div>
                         </TableCell>
-                        <TableCell className="hidden md:table-cell text-sm">{m.tecnico}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">
+                          {tecnicosDe(m).join(", ") || "—"}
+                        </TableCell>
                         <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
                           <span className="line-clamp-2 max-w-[420px]">{m.relatorio}</span>
                         </TableCell>

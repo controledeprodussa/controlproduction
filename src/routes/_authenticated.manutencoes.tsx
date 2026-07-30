@@ -14,7 +14,7 @@ import {
   Wrench,
   CalendarClock,
   Cog,
-  Users,
+  Building2,
   ExternalLink,
   ChevronLeft,
   ChevronRight,
@@ -158,9 +158,9 @@ function ManutencoesDashboard() {
   }, [rows]);
 
   const maquinas = useMemo(() => new Set(rows.map((m) => m.numero_serie)).size, [rows]);
-  const totalTecnicos = useMemo(
-    () => new Set(rows.flatMap((m) => tecnicosDe(m))).size,
-    [rows, tecnicosPorManutencao],
+  const totalClientes = useMemo(
+    () => new Set(rows.map((m) => (m.cliente ?? "").trim().toUpperCase()).filter(Boolean)).size,
+    [rows],
   );
 
   const porMes = useMemo(() => {
@@ -288,7 +288,7 @@ function ManutencoesDashboard() {
         <Stat icon={Wrench} label="Total de visitas" value={totalVisitas} color="var(--status-engenharia)" />
         <Stat icon={CalendarClock} label="Últimos 30 dias" value={ultimos30} color="var(--status-producao)" />
         <Stat icon={Cog} label="Máquinas atendidas" value={maquinas} color="var(--status-embarque)" />
-        <Stat icon={Users} label="Técnicos" value={totalTecnicos} color="var(--status-compras)" />
+        <Stat icon={Building2} label="Clientes atendidos" value={totalClientes} color="var(--status-compras)" />
       </div>
 
       {isLoading ? (

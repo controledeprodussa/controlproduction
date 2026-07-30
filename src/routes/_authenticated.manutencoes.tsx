@@ -80,6 +80,37 @@ function ManutencoesDashboard() {
     },
   });
 
+  const { data: tecnicoRows = [] } = useQuery({
+    queryKey: ["manutencao-tecnicos"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("manutencao_tecnicos")
+        .select("manutencao_id, tecnico");
+      if (error) throw error;
+      return data as { manutencao_id: string; tecnico: string }[];
+    },
+  });
+
+  // manutencao_id -> lista de técnicos (fallback: campo tecnico da manutenção)
+  const tecnicosPorManutencao = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const r of tecnicoRows) {
+      const nome = (r.tecnico ?? "").trim();
+      if (!nome) continue;
+      const arr = map.get(r.manutencao_id) ?? [];
+      if (!arr.includes(nome)) arr.push(nome);
+      map.set(r.manutencao_id, arr);
+    }
+    return map;
+  }, [tecnicoRows]);
+
+  const tecnicosDe = (m: Manutencao) => {
+    const list = tecnicosPorManutencao.get(m.id);
+    if (list && list.length) return list;
+    const fallback = (m.tecnico ?? "").trim();
+    return fallback ? [fallback] : [];
+  };
+
   const [de, setDe] = useState("");
   const [ate, setAte] = useState("");
   const [cliente, setCliente] = useState("todos");

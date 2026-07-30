@@ -197,6 +197,42 @@ export type Database = {
           },
         ]
       }
+      manutencao_tecnicos: {
+        Row: {
+          company_id: string | null
+          id: string
+          manutencao_id: string
+          tecnico: string
+        }
+        Insert: {
+          company_id?: string | null
+          id?: string
+          manutencao_id: string
+          tecnico: string
+        }
+        Update: {
+          company_id?: string | null
+          id?: string
+          manutencao_id?: string
+          tecnico?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manutencao_tecnicos_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manutencao_tecnicos_manutencao_id_fkey"
+            columns: ["manutencao_id"]
+            isOneToOne: false
+            referencedRelation: "manutencoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manutencoes: {
         Row: {
           cliente: string

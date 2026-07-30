@@ -118,23 +118,26 @@ function ManutencoesDashboard() {
   const [page, setPage] = useState(0);
 
   const clientes = useMemo(
-    () => Array.from(new Set(all.map((m) => m.cliente).filter(Boolean))).sort(),
+    () =>
+      Array.from(
+        new Set(all.map((m) => (m.cliente ?? "").trim().toUpperCase()).filter(Boolean)),
+      ).sort(),
     [all],
   );
   const tecnicos = useMemo(
-    () => Array.from(new Set(all.map((m) => m.tecnico).filter(Boolean))).sort(),
-    [all],
+    () => Array.from(new Set(all.flatMap((m) => tecnicosDe(m)))).sort(),
+    [all, tecnicosPorManutencao],
   );
 
   const rows = useMemo(() => {
     return all.filter((m) => {
       if (de && m.data_visita < de) return false;
       if (ate && m.data_visita > ate) return false;
-      if (cliente !== "todos" && m.cliente !== cliente) return false;
-      if (tecnico !== "todos" && m.tecnico !== tecnico) return false;
+      if (cliente !== "todos" && (m.cliente ?? "").trim().toUpperCase() !== cliente) return false;
+      if (tecnico !== "todos" && !tecnicosDe(m).includes(tecnico)) return false;
       return true;
     });
-  }, [all, de, ate, cliente, tecnico]);
+  }, [all, de, ate, cliente, tecnico, tecnicosPorManutencao]);
 
   const ultimos30 = useMemo(() => {
     const limite = new Date();
@@ -143,7 +146,10 @@ function ManutencoesDashboard() {
   }, [rows]);
 
   const maquinas = useMemo(() => new Set(rows.map((m) => m.numero_serie)).size, [rows]);
-  const totalTecnicos = useMemo(() => new Set(rows.map((m) => m.tecnico)).size, [rows]);
+  const totalTecnicos = useMemo(
+    () => new Set(rows.flatMap((m) => tecnicosDe(m))).size,
+    [rows, tecnicosPorManutencao],
+  );
 
   const porMes = useMemo(() => {
     const base = startOfMonth(subMonths(new Date(), 11));

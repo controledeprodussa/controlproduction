@@ -139,10 +139,22 @@ function ManutencoesDashboard() {
     });
   }, [all, de, ate, cliente, tecnico, tecnicosPorManutencao]);
 
+  // Conta visitas distintas: uma visita = um link_relatorio distinto por cliente
+  // Linhas sem link_relatorio usam o próprio id como chave fallback
+  const visitaKey = (m: Manutencao) =>
+    (m.link_relatorio ?? "").trim() || `__no_link__${m.id}`;
+
+  // Total de visitas distintas (sem agrupamento de cliente)
+  const totalVisitas = useMemo(
+    () => new Set(rows.map(visitaKey)).size,
+    [rows],
+  );
+
   const ultimos30 = useMemo(() => {
     const limite = new Date();
     limite.setDate(limite.getDate() - 30);
-    return rows.filter((m) => parseLocalDate(m.data_visita) >= limite).length;
+    const recent = rows.filter((m) => parseLocalDate(m.data_visita) >= limite);
+    return new Set(recent.map(visitaKey)).size;
   }, [rows]);
 
   const maquinas = useMemo(() => new Set(rows.map((m) => m.numero_serie)).size, [rows]);
@@ -166,30 +178,51 @@ function ManutencoesDashboard() {
     return buckets;
   }, [rows]);
 
-  const topBy = (getKey: (m: Manutencao) => string) => {
+  // Top clientes: COUNT(DISTINCT link_relatorio) por cliente
+  const topClientes = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    for (const m of rows) {
+      const clienteKey = (m.cliente ?? "").trim().toUpperCase() || "—";
+      const vk = visitaKey(m);
+      const set = map.get(clienteKey) ?? new Set<string>();
+      set.add(vk);
+      map.set(clienteKey, set);
+    }
+    return Array.from(map, ([name, set]) => ({ name, total: set.size }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+  }, [rows]);
+
+  // Top máquinas: mantém contagem por linha (uma por máquina atendida)
+  const topMaquinas = useMemo(() => {
     const map = new Map<string, number>();
-    for (const m of rows) map.set(getKey(m), (map.get(getKey(m)) ?? 0) + 1);
+    for (const m of rows) {
+      const k = `${m.numero_serie} · ${(m.cliente ?? "").trim().toUpperCase()}`;
+      map.set(k, (map.get(k) ?? 0) + 1);
+    }
     return Array.from(map, ([name, total]) => ({ name, total }))
       .sort((a, b) => b.total - a.total)
       .slice(0, 10);
-  };
+  }, [rows]);
 
-  const topClientes = useMemo(
-    () => topBy((m) => (m.cliente ?? "").trim().toUpperCase() || "—"),
-    [rows],
-  );
-  const topMaquinas = useMemo(
-    () => topBy((m) => `${m.numero_serie} · ${(m.cliente ?? "").trim().toUpperCase()}`),
-    [rows],
-  );
+  // Por técnico: COUNT(DISTINCT link_relatorio) agrupado por técnico
   const porTecnico = useMemo(() => {
-    const map = new Map<string, number>();
+    const map = new Map<string, Set<string>>();
     for (const m of rows) {
+      const vk = visitaKey(m);
       const list = tecnicosDe(m);
-      if (!list.length) map.set("—", (map.get("—") ?? 0) + 1);
-      for (const t of list) map.set(t, (map.get(t) ?? 0) + 1);
+      if (!list.length) {
+        const set = map.get("—") ?? new Set<string>();
+        set.add(vk);
+        map.set("—", set);
+      }
+      for (const t of list) {
+        const set = map.get(t) ?? new Set<string>();
+        set.add(vk);
+        map.set(t, set);
+      }
     }
-    return Array.from(map, ([name, total]) => ({ name, total }))
+    return Array.from(map, ([name, set]) => ({ name, total: set.size }))
       .sort((a, b) => b.total - a.total)
       .slice(0, 10);
   }, [rows, tecnicosPorManutencao]);
@@ -252,7 +285,7 @@ function ManutencoesDashboard() {
 
       {/* Indicadores */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        <Stat icon={Wrench} label="Total de manutenções" value={rows.length} color="var(--status-engenharia)" />
+        <Stat icon={Wrench} label="Total de visitas" value={totalVisitas} color="var(--status-engenharia)" />
         <Stat icon={CalendarClock} label="Últimos 30 dias" value={ultimos30} color="var(--status-producao)" />
         <Stat icon={Cog} label="Máquinas atendidas" value={maquinas} color="var(--status-embarque)" />
         <Stat icon={Users} label="Técnicos" value={totalTecnicos} color="var(--status-compras)" />

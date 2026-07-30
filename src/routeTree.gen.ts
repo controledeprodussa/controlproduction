@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated.index'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated.usuarios'
 import { Route as AuthenticatedModelosRouteImport } from './routes/_authenticated.modelos'
+import { Route as AuthenticatedManutencoesRouteImport } from './routes/_authenticated.manutencoes'
 import { Route as AuthenticatedCriarRouteImport } from './routes/_authenticated.criar'
 import { Route as AuthenticatedMaquinasIndexRouteImport } from './routes/_authenticated.maquinas.index'
 import { Route as AuthenticatedMaquinasIdRouteImport } from './routes/_authenticated.maquinas.$id'
@@ -42,6 +43,12 @@ const AuthenticatedModelosRoute = AuthenticatedModelosRouteImport.update({
   path: '/modelos',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedManutencoesRoute =
+  AuthenticatedManutencoesRouteImport.update({
+    id: '/manutencoes',
+    path: '/manutencoes',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCriarRoute = AuthenticatedCriarRouteImport.update({
   id: '/criar',
   path: '/criar',
@@ -63,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/criar': typeof AuthenticatedCriarRoute
+  '/manutencoes': typeof AuthenticatedManutencoesRoute
   '/modelos': typeof AuthenticatedModelosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/maquinas/$id': typeof AuthenticatedMaquinasIdRoute
@@ -71,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/criar': typeof AuthenticatedCriarRoute
+  '/manutencoes': typeof AuthenticatedManutencoesRoute
   '/modelos': typeof AuthenticatedModelosRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/': typeof AuthenticatedIndexRoute
@@ -82,6 +91,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/criar': typeof AuthenticatedCriarRoute
+  '/_authenticated/manutencoes': typeof AuthenticatedManutencoesRoute
   '/_authenticated/modelos': typeof AuthenticatedModelosRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/criar'
+    | '/manutencoes'
     | '/modelos'
     | '/usuarios'
     | '/maquinas/$id'
@@ -102,6 +113,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/criar'
+    | '/manutencoes'
     | '/modelos'
     | '/usuarios'
     | '/'
@@ -112,6 +124,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/criar'
+    | '/_authenticated/manutencoes'
     | '/_authenticated/modelos'
     | '/_authenticated/usuarios'
     | '/_authenticated/'
@@ -161,6 +174,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedModelosRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/manutencoes': {
+      id: '/_authenticated/manutencoes'
+      path: '/manutencoes'
+      fullPath: '/manutencoes'
+      preLoaderRoute: typeof AuthenticatedManutencoesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/criar': {
       id: '/_authenticated/criar'
       path: '/criar'
@@ -187,6 +207,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedCriarRoute: typeof AuthenticatedCriarRoute
+  AuthenticatedManutencoesRoute: typeof AuthenticatedManutencoesRoute
   AuthenticatedModelosRoute: typeof AuthenticatedModelosRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
@@ -196,6 +217,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCriarRoute: AuthenticatedCriarRoute,
+  AuthenticatedManutencoesRoute: AuthenticatedManutencoesRoute,
   AuthenticatedModelosRoute: AuthenticatedModelosRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
@@ -214,13 +236,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

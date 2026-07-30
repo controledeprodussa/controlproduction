@@ -174,12 +174,25 @@ function ManutencoesDashboard() {
       .slice(0, 10);
   };
 
-  const topClientes = useMemo(() => topBy((m) => m.cliente || "—"), [rows]);
-  const topMaquinas = useMemo(
-    () => topBy((m) => `${m.numero_serie} · ${m.cliente}`),
+  const topClientes = useMemo(
+    () => topBy((m) => (m.cliente ?? "").trim().toUpperCase() || "—"),
     [rows],
   );
-  const porTecnico = useMemo(() => topBy((m) => m.tecnico || "—"), [rows]);
+  const topMaquinas = useMemo(
+    () => topBy((m) => `${m.numero_serie} · ${(m.cliente ?? "").trim().toUpperCase()}`),
+    [rows],
+  );
+  const porTecnico = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const m of rows) {
+      const list = tecnicosDe(m);
+      if (!list.length) map.set("—", (map.get("—") ?? 0) + 1);
+      for (const t of list) map.set(t, (map.get(t) ?? 0) + 1);
+    }
+    return Array.from(map, ([name, total]) => ({ name, total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+  }, [rows, tecnicosPorManutencao]);
 
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const pageSafe = Math.min(page, totalPages - 1);

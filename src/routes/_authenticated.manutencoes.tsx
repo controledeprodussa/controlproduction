@@ -330,7 +330,9 @@ function ManutencoesDashboard() {
                           <div className="font-medium">{m.numero_serie}</div>
                           <div className="text-xs text-muted-foreground truncate max-w-[180px]">{m.cliente}</div>
                         </TableCell>
-                        <TableCell className="hidden md:table-cell text-sm">{m.tecnico}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">
+                          {tecnicosDe(m).join(", ") || "—"}
+                        </TableCell>
                         <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
                           <span className="line-clamp-2 max-w-[420px]">{m.relatorio}</span>
                         </TableCell>

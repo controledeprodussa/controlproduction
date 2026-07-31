@@ -106,7 +106,13 @@ function ManutencoesDashboard() {
         .replace(/\//g, "|")
         .split("|")
         .map((t) => t.trim())
-        .filter(Boolean);
+        .map((t) => {
+          const lower = t.toLowerCase();
+          if (!t || t === "-" || t === "—" || lower === "não informado" || lower === "nao informado") return null;
+          if (lower === "augustin") return "Agustin";
+          return t;
+        })
+        .filter(Boolean) as string[];
 
       for (const nome of names) {
         const arr = map.get(r.manutencao_id) ?? [];
@@ -147,7 +153,13 @@ function ManutencoesDashboard() {
         .replace(/\//g, "|")
         .split("|")
         .map((t) => t.trim())
-        .filter(Boolean);
+        .map((t) => {
+          const lower = t.toLowerCase();
+          if (!t || t === "-" || t === "—" || lower === "não informado" || lower === "nao informado") return null;
+          if (lower === "augustin") return "Agustin";
+          return t;
+        })
+        .filter(Boolean) as string[];
 
       for (const nome of names) {
         set.add(nome);

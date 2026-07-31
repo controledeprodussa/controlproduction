@@ -210,6 +210,7 @@ function UsuariosPage() {
                 <th className="py-2 pr-4">Nome</th>
                 <th className="py-2 pr-4">Papel</th>
                 <th className="py-2 pr-4">Criado em</th>
+                <th className="py-2 pr-4 text-right">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -223,11 +224,30 @@ function UsuariosPage() {
                     </span>
                   </td>
                   <td className="py-2 pr-4 text-muted-foreground">{new Date(u.created_at).toLocaleDateString("pt-BR")}</td>
+                  <td className="py-2 pr-4 text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Editar ${u.usuario ?? ""}`}
+                      onClick={() =>
+                        setEdit({
+                          id: u.id,
+                          usuario: u.usuario ?? "",
+                          nome: u.nome ?? "",
+                          role: (u.role as "admin" | "user") ?? "user",
+                          senha: "",
+                        })
+                      }
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                  </td>
                 </tr>
               ))}
               {usuariosQuery.data?.length === 0 && (
-                <tr><td colSpan={4} className="py-6 text-center text-muted-foreground">Nenhum usuário</td></tr>
+                <tr><td colSpan={5} className="py-6 text-center text-muted-foreground">Nenhum usuário</td></tr>
               )}
+
             </tbody>
           </table>
         </div>

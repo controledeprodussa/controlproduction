@@ -105,10 +105,7 @@ function ManutencoesDashboard() {
   }, [tecnicoRows]);
 
   const tecnicosDe = (m: Manutencao) => {
-    const list = tecnicosPorManutencao.get(m.id);
-    if (list && list.length) return list;
-    const fallback = (m.tecnico ?? "").trim();
-    return fallback ? [fallback] : [];
+    return tecnicosPorManutencao.get(m.id) ?? [];
   };
 
   const [de, setDe] = useState("");
@@ -125,8 +122,8 @@ function ManutencoesDashboard() {
     [all],
   );
   const tecnicos = useMemo(
-    () => Array.from(new Set(all.flatMap((m) => tecnicosDe(m)))).sort(),
-    [all, tecnicosPorManutencao],
+    () => Array.from(new Set(tecnicoRows.map((r) => (r.tecnico ?? "").trim()).filter(Boolean))).sort(),
+    [tecnicoRows],
   );
 
   const rows = useMemo(() => {
@@ -205,24 +202,16 @@ function ManutencoesDashboard() {
       .slice(0, 10);
   }, [rows]);
 
-  // Por técnico: COUNT(DISTINCT link_relatorio) agrupado por técnico
+  // Por técnico: COUNT(DISTINCT manutencao_id) agrupado por técnico
   const porTecnico = useMemo(() => {
-    const map = new Map<string, Set<string>>();
+    const map = new Map<string, number>();
     for (const m of rows) {
-      const vk = visitaKey(m);
       const list = tecnicosDe(m);
-      if (!list.length) {
-        const set = map.get("—") ?? new Set<string>();
-        set.add(vk);
-        map.set("—", set);
-      }
       for (const t of list) {
-        const set = map.get(t) ?? new Set<string>();
-        set.add(vk);
-        map.set(t, set);
+        map.set(t, (map.get(t) ?? 0) + 1);
       }
     }
-    return Array.from(map, ([name, set]) => ({ name, total: set.size }))
+    return Array.from(map, ([name, total]) => ({ name, total }))
       .sort((a, b) => b.total - a.total)
       .slice(0, 10);
   }, [rows, tecnicosPorManutencao]);

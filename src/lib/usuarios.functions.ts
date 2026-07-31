@@ -66,7 +66,7 @@ export const editarUsuario = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
     }
 
-    const profileUpdate: Record<string, unknown> = {};
+    const profileUpdate: { nome?: string | null; usuario?: string; role?: string } = {};
     if (data.nome !== undefined) profileUpdate.nome = data.nome.trim() || null;
     if (usuario) profileUpdate.usuario = usuario;
     if (data.role) profileUpdate.role = data.role;

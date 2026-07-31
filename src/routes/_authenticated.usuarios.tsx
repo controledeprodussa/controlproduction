@@ -56,6 +56,31 @@ function UsuariosPage() {
   const [newCoOpen, setNewCoOpen] = useState(false);
   const [newCoNome, setNewCoNome] = useState("");
 
+  type EditState = { id: string; usuario: string; nome: string; role: "admin" | "user"; senha: string };
+  const [edit, setEdit] = useState<EditState | null>(null);
+  const editarFn = useServerFn(editarUsuario);
+
+  const updateUser = useMutation({
+    mutationFn: async (e: EditState) =>
+      editarFn({
+        data: {
+          id: e.id,
+          usuario: e.usuario,
+          nome: e.nome,
+          role: e.role,
+          senha: e.senha || undefined,
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Usuário atualizado");
+      setEdit(null);
+      qc.invalidateQueries({ queryKey: ["usuarios-list"] });
+      qc.invalidateQueries({ queryKey: ["current-profile"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
   const createCompany = useMutation({
     mutationFn: async (nome: string) => {
       const { data, error } = await supabase.from("companies").insert({ nome }).select().single();

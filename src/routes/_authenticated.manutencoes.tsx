@@ -109,7 +109,7 @@ function ManutencoesDashboard() {
         .map((t) => {
           const lower = t.toLowerCase();
           if (!t || t === "-" || t === "—" || lower === "não informado" || lower === "nao informado") return null;
-          if (lower === "augustin") return "Agustin";
+          if (lower === "augustin" || lower === "agustin") return "Augustin";
           return t;
         })
         .filter(Boolean) as string[];
@@ -156,7 +156,7 @@ function ManutencoesDashboard() {
         .map((t) => {
           const lower = t.toLowerCase();
           if (!t || t === "-" || t === "—" || lower === "não informado" || lower === "nao informado") return null;
-          if (lower === "augustin") return "Agustin";
+          if (lower === "augustin" || lower === "agustin") return "Augustin";
           return t;
         })
         .filter(Boolean) as string[];

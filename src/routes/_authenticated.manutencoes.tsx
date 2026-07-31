@@ -110,6 +110,9 @@ function ManutencoesDashboard() {
           const lower = t.toLowerCase();
           if (!t || t === "-" || t === "—" || lower === "não informado" || lower === "nao informado") return null;
           if (lower === "augustin" || lower === "agustin") return "Augustin";
+          if (lower === "joveli" || lower === "jovelli" || lower === "joveli nardi") return "Joveli Nardi";
+          if (lower === "luciano" || lower === "luciano lottici") return "Luciano Lottici";
+          if (lower === "agustin aguado" || lower === "augustin aguado") return "Augustin Aguado";
           return t;
         })
         .filter(Boolean) as string[];
@@ -157,6 +160,9 @@ function ManutencoesDashboard() {
           const lower = t.toLowerCase();
           if (!t || t === "-" || t === "—" || lower === "não informado" || lower === "nao informado") return null;
           if (lower === "augustin" || lower === "agustin") return "Augustin";
+          if (lower === "joveli" || lower === "jovelli" || lower === "joveli nardi") return "Joveli Nardi";
+          if (lower === "luciano" || lower === "luciano lottici") return "Luciano Lottici";
+          if (lower === "agustin aguado" || lower === "augustin aguado") return "Augustin Aguado";
           return t;
         })
         .filter(Boolean) as string[];

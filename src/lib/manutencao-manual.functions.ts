@@ -149,5 +149,39 @@ export const registrarManutencaoManual = createServerFn({ method: "POST" })
       .select();
     if (insErr) throw new Error(insErr.message);
 
+    if (inserted && inserted.length > 0) {
+      const techRows: { manutencao_id: string; tecnico: string; company_id: string }[] = [];
+      for (const m of inserted) {
+        const rawNome = (m.tecnico ?? "").trim();
+        if (!rawNome) continue;
+
+        const names = rawNome
+          .replace(/\s+e\s+/gi, "|")
+          .replace(/\s+&\s+/g, "|")
+          .replace(/,/g, "|")
+          .replace(/\//g, "|")
+          .split("|")
+          .map((t) => t.trim())
+          .filter(Boolean);
+
+        for (const nome of names) {
+          techRows.push({
+            manutencao_id: m.id,
+            tecnico: nome,
+            company_id: companyId,
+          });
+        }
+      }
+
+      if (techRows.length > 0) {
+        const { error: techErr } = await supabaseAdmin
+          .from("manutencao_tecnicos")
+          .insert(techRows);
+        if (techErr) {
+          console.error("Erro ao inserir técnicos da manutenção:", techErr);
+        }
+      }
+    }
+
     return { sucesso: true, criadas: inserted?.length ?? 0, seriais };
   });

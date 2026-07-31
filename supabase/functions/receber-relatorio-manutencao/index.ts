@@ -111,6 +111,42 @@ Deno.serve(async (req) => {
     );
   }
 
+  // Sincroniza os técnicos da manutenção
+  if (data) {
+    // Deleta relações anteriores para esta manutenção em caso de reenvio/atualização
+    await supabase
+      .from("manutencao_tecnicos")
+      .delete()
+      .eq("manutencao_id", data.id);
+
+    const rawNome = (tecnico ?? "").trim();
+    if (rawNome) {
+      const names = rawNome
+        .replace(/\s+e\s+/gi, "|")
+        .replace(/\s+&\s+/g, "|")
+        .replace(/,/g, "|")
+        .replace(/\//g, "|")
+        .split("|")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      const techRows = names.map((nome) => ({
+        manutencao_id: data.id,
+        tecnico: nome,
+        company_id: company.id,
+      }));
+
+      if (techRows.length > 0) {
+        const { error: techErr } = await supabase
+          .from("manutencao_tecnicos")
+          .insert(techRows);
+        if (techErr) {
+          console.error("Erro ao inserir técnicos da manutenção:", techErr);
+        }
+      }
+    }
+  }
+
   return new Response(JSON.stringify({ sucesso: true, manutencao: data }), {
     status: 200,
     headers: { ...corsHeaders, "Content-Type": "application/json" },

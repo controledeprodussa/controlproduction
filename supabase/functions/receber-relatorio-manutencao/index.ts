@@ -68,12 +68,29 @@ Deno.serve(async (req) => {
     );
   }
 
+  // Resolução automática: se o técnico informou o nome da máquina (ex: "S2014-004")
+  // em vez do número de série numérico (ex: "87"), buscamos na tabela machines pelo
+  // campo `nome` (case-insensitive) e substituímos pelo numero_serie real.
+  let numeroSerieResolvido = numero_serie;
+  const { data: maquinaPorNome } = await supabase
+    .from("machines")
+    .select("numero_serie")
+    .ilike("nome", numero_serie.trim())
+    .maybeSingle();
+
+  if (maquinaPorNome?.numero_serie) {
+    console.log(
+      `Máquina reconhecida pelo nome "${numero_serie}" → número de série "${maquinaPorNome.numero_serie}"`,
+    );
+    numeroSerieResolvido = maquinaPorNome.numero_serie;
+  }
+
   const { data, error } = await supabase
     .from("manutencoes")
     .upsert(
       {
         relatorio_id,
-        numero_serie,
+        numero_serie: numeroSerieResolvido,
         cliente,
         tecnico,
         data_visita,

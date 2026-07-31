@@ -91,15 +91,28 @@ function ManutencoesDashboard() {
     },
   });
 
-  // manutencao_id -> lista de técnicos (fallback: campo tecnico da manutenção)
+  // manutencao_id -> lista de técnicos
   const tecnicosPorManutencao = useMemo(() => {
     const map = new Map<string, string[]>();
     for (const r of tecnicoRows) {
-      const nome = (r.tecnico ?? "").trim();
-      if (!nome) continue;
-      const arr = map.get(r.manutencao_id) ?? [];
-      if (!arr.includes(nome)) arr.push(nome);
-      map.set(r.manutencao_id, arr);
+      const rawNome = (r.tecnico ?? "").trim();
+      if (!rawNome) continue;
+
+      // Normaliza e divide os nomes por diversos separadores possíveis (" e ", ",", "/", "&")
+      const names = rawNome
+        .replace(/\s+e\s+/gi, "|")
+        .replace(/\s+&\s+/g, "|")
+        .replace(/,/g, "|")
+        .replace(/\//g, "|")
+        .split("|")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      for (const nome of names) {
+        const arr = map.get(r.manutencao_id) ?? [];
+        if (!arr.includes(nome)) arr.push(nome);
+        map.set(r.manutencao_id, arr);
+      }
     }
     return map;
   }, [tecnicoRows]);
@@ -121,10 +134,27 @@ function ManutencoesDashboard() {
       ).sort(),
     [all],
   );
-  const tecnicos = useMemo(
-    () => Array.from(new Set(tecnicoRows.map((r) => (r.tecnico ?? "").trim()).filter(Boolean))).sort(),
-    [tecnicoRows],
-  );
+  const tecnicos = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of tecnicoRows) {
+      const rawNome = (r.tecnico ?? "").trim();
+      if (!rawNome) continue;
+
+      const names = rawNome
+        .replace(/\s+e\s+/gi, "|")
+        .replace(/\s+&\s+/g, "|")
+        .replace(/,/g, "|")
+        .replace(/\//g, "|")
+        .split("|")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      for (const nome of names) {
+        set.add(nome);
+      }
+    }
+    return Array.from(set).sort();
+  }, [tecnicoRows]);
 
   const rows = useMemo(() => {
     return all.filter((m) => {

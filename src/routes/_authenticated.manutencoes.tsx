@@ -482,7 +482,7 @@ function ChartTooltip({ active, payload, label }: any) {
   return (
     <div className="rounded-xl border border-border bg-popover px-3 py-2 shadow-xl">
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="text-sm font-semibold tabular-nums">{payload[0].value} manutenção(ões)</div>
+      <div className="text-sm font-semibold tabular-nums">{payload[0].value}</div>
     </div>
   );
 }

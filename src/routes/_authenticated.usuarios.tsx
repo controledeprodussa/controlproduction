@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { UserPlus, ShieldCheck, Building2, Loader2 } from "lucide-react";
+import { UserPlus, ShieldCheck, Building2, Loader2, Pencil } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { editarUsuario } from "@/lib/usuarios.functions";
+
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
   head: () => ({ meta: [{ title: "Usuários · Controle de Produção" }] }),

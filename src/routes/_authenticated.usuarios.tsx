@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { UserPlus, ShieldCheck, Building2, Loader2 } from "lucide-react";
+import { UserPlus, ShieldCheck, Building2, Loader2, Pencil } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { editarUsuario } from "@/lib/usuarios.functions";
+
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
   head: () => ({ meta: [{ title: "Usuários · Controle de Produção" }] }),
@@ -52,6 +55,31 @@ function UsuariosPage() {
   const [companyId, setCompanyId] = useState<string>("");
   const [newCoOpen, setNewCoOpen] = useState(false);
   const [newCoNome, setNewCoNome] = useState("");
+
+  type EditState = { id: string; usuario: string; nome: string; role: "admin" | "user"; senha: string };
+  const [edit, setEdit] = useState<EditState | null>(null);
+  const editarFn = useServerFn(editarUsuario);
+
+  const updateUser = useMutation({
+    mutationFn: async (e: EditState) =>
+      editarFn({
+        data: {
+          id: e.id,
+          usuario: e.usuario,
+          nome: e.nome,
+          role: e.role,
+          senha: e.senha || undefined,
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Usuário atualizado");
+      setEdit(null);
+      qc.invalidateQueries({ queryKey: ["usuarios-list"] });
+      qc.invalidateQueries({ queryKey: ["current-profile"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
 
   const createCompany = useMutation({
     mutationFn: async (nome: string) => {
@@ -182,6 +210,7 @@ function UsuariosPage() {
                 <th className="py-2 pr-4">Nome</th>
                 <th className="py-2 pr-4">Papel</th>
                 <th className="py-2 pr-4">Criado em</th>
+                <th className="py-2 pr-4 text-right">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -195,15 +224,87 @@ function UsuariosPage() {
                     </span>
                   </td>
                   <td className="py-2 pr-4 text-muted-foreground">{new Date(u.created_at).toLocaleDateString("pt-BR")}</td>
+                  <td className="py-2 pr-4 text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Editar ${u.usuario ?? ""}`}
+                      onClick={() =>
+                        setEdit({
+                          id: u.id,
+                          usuario: u.usuario ?? "",
+                          nome: u.nome ?? "",
+                          role: (u.role as "admin" | "user") ?? "user",
+                          senha: "",
+                        })
+                      }
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                  </td>
                 </tr>
               ))}
               {usuariosQuery.data?.length === 0 && (
-                <tr><td colSpan={4} className="py-6 text-center text-muted-foreground">Nenhum usuário</td></tr>
+                <tr><td colSpan={5} className="py-6 text-center text-muted-foreground">Nenhum usuário</td></tr>
               )}
+
             </tbody>
           </table>
         </div>
       </Card>
+
+      <Dialog open={!!edit} onOpenChange={(o) => !o && setEdit(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Editar usuário</DialogTitle></DialogHeader>
+          {edit && (
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label>Usuário</Label>
+                <Input
+                  value={edit.usuario}
+                  onChange={(e) => setEdit({ ...edit, usuario: e.target.value })}
+                  className="bg-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Nome</Label>
+                <Input
+                  value={edit.nome}
+                  onChange={(e) => setEdit({ ...edit, nome: e.target.value })}
+                  className="bg-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Papel</Label>
+                <Select value={edit.role} onValueChange={(v) => setEdit({ ...edit, role: v as "admin" | "user" })}>
+                  <SelectTrigger className="bg-secondary"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">Usuário</SelectItem>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Nova senha (opcional)</Label>
+                <Input
+                  type="password"
+                  value={edit.senha}
+                  onChange={(e) => setEdit({ ...edit, senha: e.target.value })}
+                  placeholder="Deixe em branco para manter"
+                  className="bg-secondary"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEdit(null)}>Cancelar</Button>
+            <Button disabled={updateUser.isPending} onClick={() => edit && updateUser.mutate(edit)}>
+              {updateUser.isPending ? "Salvando…" : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={newCoOpen} onOpenChange={setNewCoOpen}>
         <DialogContent>

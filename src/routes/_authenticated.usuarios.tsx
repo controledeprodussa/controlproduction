@@ -253,6 +253,59 @@ function UsuariosPage() {
         </div>
       </Card>
 
+      <Dialog open={!!edit} onOpenChange={(o) => !o && setEdit(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Editar usuário</DialogTitle></DialogHeader>
+          {edit && (
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label>Usuário</Label>
+                <Input
+                  value={edit.usuario}
+                  onChange={(e) => setEdit({ ...edit, usuario: e.target.value })}
+                  className="bg-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Nome</Label>
+                <Input
+                  value={edit.nome}
+                  onChange={(e) => setEdit({ ...edit, nome: e.target.value })}
+                  className="bg-secondary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Papel</Label>
+                <Select value={edit.role} onValueChange={(v) => setEdit({ ...edit, role: v as "admin" | "user" })}>
+                  <SelectTrigger className="bg-secondary"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">Usuário</SelectItem>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Nova senha (opcional)</Label>
+                <Input
+                  type="password"
+                  value={edit.senha}
+                  onChange={(e) => setEdit({ ...edit, senha: e.target.value })}
+                  placeholder="Deixe em branco para manter"
+                  className="bg-secondary"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEdit(null)}>Cancelar</Button>
+            <Button disabled={updateUser.isPending} onClick={() => edit && updateUser.mutate(edit)}>
+              {updateUser.isPending ? "Salvando…" : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
       <Dialog open={newCoOpen} onOpenChange={setNewCoOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Nova empresa</DialogTitle></DialogHeader>

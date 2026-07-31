@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,17 @@ import { editarUsuario } from "@/lib/usuarios.functions";
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
   head: () => ({ meta: [{ title: "Usuários · Controle de Produção" }] }),
+  beforeLoad: async () => {
+    const { supabase: _sb } = await import("@/integrations/supabase/client");
+    const { data: userData } = await _sb.auth.getUser();
+    if (!userData.user) throw redirect({ to: "/auth" });
+    const { data: profile } = await _sb
+      .from("profiles")
+      .select("role")
+      .eq("id", userData.user.id)
+      .single();
+    if (!profile || profile.role !== "admin") throw redirect({ to: "/" });
+  },
   component: UsuariosPage,
 });
 

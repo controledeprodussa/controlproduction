@@ -68,7 +68,7 @@
   --input: oklch(0.27 0.018 260);
   --ring: oklch(0.72 0.17 250);
 
-  --status-comercial:  oklch(0.55 0.14 145);     /* dark green */
+  --status-comercial:  oklch(0.80 0.01 260);     /* light gray */
   --status-engenharia: oklch(0.72 0.17 250);    /* blue */
   --status-compras:    oklch(0.82 0.15 90);     /* yellow/gold */
   --status-recebimento:oklch(0.76 0.14 175);    /* teal */

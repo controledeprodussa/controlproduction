@@ -288,9 +288,9 @@ function StatCard({ label, value, status }: { label: string; value: string | num
 
 function MiniStat({ label, value, status }: { label: string; value: string | number; status: MachineStatus }) {
   return (
-    <div className="rounded-xl border border-border bg-card px-2.5 py-1.5 flex items-center justify-between gap-1.5 min-w-0">
-      <div className="text-[9px] uppercase tracking-wider text-white font-medium whitespace-nowrap">{label}</div>
-      <div className="text-sm font-bold tabular-nums shrink-0" style={{ color: `var(--status-${status})` }}>{value}</div>
+    <div className="rounded-xl border border-border bg-card px-3.5 py-2 flex items-center justify-between gap-2 min-w-0">
+      <div className="text-[11px] uppercase tracking-wider text-white font-medium whitespace-nowrap">{label}</div>
+      <div className="text-base font-bold tabular-nums shrink-0" style={{ color: `var(--status-${status})` }}>{value}</div>
     </div>
   );
 }

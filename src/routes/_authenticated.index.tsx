@@ -147,12 +147,10 @@ function Dashboard() {
         </div>
       </header>
 
-      <div className="grid grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
-        <StatCard label="Engenharia" value={count("engenharia")} status="engenharia" />
-        <StatCard label="Compras" value={count("compras")} status="compras" />
-        <StatCard label="Produção" value={count("producao")} status="producao" />
-        <StatCard label="Embarque" value={count("embarque")} status="embarque" />
-        <StatCard label="Entregue" value={count("entregue")} status="entregue" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-2 md:gap-3">
+        {STATUS_ORDER.map((status) => (
+          <StatCard key={status} label={STATUS_LABEL[status]} value={count(status)} status={status} />
+        ))}
       </div>
 
       <section className="space-y-4">
@@ -184,12 +182,10 @@ function Dashboard() {
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Visão Geral</h1>
                 <p className="text-sm text-muted-foreground mt-0.5">Produção em tempo real</p>
               </div>
-              <div className="hidden md:grid grid-cols-5 gap-2 flex-1 max-w-3xl">
-                <MiniStat label="Engenharia" value={count("engenharia")} status="engenharia" />
-                <MiniStat label="Compras" value={count("compras")} status="compras" />
-                <MiniStat label="Produção" value={count("producao")} status="producao" />
-                <MiniStat label="Embarque" value={count("embarque")} status="embarque" />
-                <MiniStat label="Entregue" value={count("entregue")} status="entregue" />
+              <div className="hidden md:grid grid-cols-5 lg:grid-cols-10 gap-2 flex-1 max-w-5xl">
+                {STATUS_ORDER.map((status) => (
+                  <MiniStat key={status} label={STATUS_LABEL[status]} value={count(status)} status={status} />
+                ))}
               </div>
             </div>
             <div className="flex items-center gap-2">

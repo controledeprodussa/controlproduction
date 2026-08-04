@@ -30,10 +30,15 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-status-comercial: var(--status-comercial);
   --color-status-engenharia: var(--status-engenharia);
   --color-status-compras: var(--status-compras);
-  --color-status-producao: var(--status-producao);
-  --color-status-embarque: var(--status-embarque);
+  --color-status-recebimento: var(--status-recebimento);
+  --color-status-caldeiraria: var(--status-caldeiraria);
+  --color-status-montagem: var(--status-montagem);
+  --color-status-testes: var(--status-testes);
+  --color-status-expedicao: var(--status-expedicao);
+  --color-status-instalacao: var(--status-instalacao);
   --color-status-entregue: var(--status-entregue);
   --color-status-atrasado: var(--status-atrasado);
 }
@@ -61,12 +66,17 @@
   --input: oklch(0.27 0.018 260);
   --ring: oklch(0.72 0.17 250);
 
-  --status-engenharia: oklch(0.72 0.17 250);   /* blue */
-  --status-compras:    oklch(0.82 0.15 90);    /* yellow */
-  --status-producao:   oklch(0.72 0.18 150);   /* green */
-  --status-embarque:   oklch(0.66 0.20 305);   /* purple */
-  --status-entregue:   oklch(0.70 0.18 55);   /* orange */
-  --status-atrasado:   oklch(0.65 0.22 25);    /* red */
+  --status-comercial:  oklch(0.78 0.15 40);     /* orange */
+  --status-engenharia: oklch(0.72 0.17 250);    /* blue */
+  --status-compras:    oklch(0.82 0.15 90);     /* yellow/gold */
+  --status-recebimento:oklch(0.76 0.14 175);    /* teal */
+  --status-caldeiraria:oklch(0.68 0.16 280);    /* indigo */
+  --status-montagem:   oklch(0.70 0.19 310);    /* violet/purple */
+  --status-testes:     oklch(0.75 0.16 145);    /* emerald/green */
+  --status-expedicao:  oklch(0.66 0.20 340);    /* magenta/rose */
+  --status-instalacao: oklch(0.72 0.16 220);    /* cyan */
+  --status-entregue:   oklch(0.70 0.08 100);    /* light sage grey */
+  --status-atrasado:   oklch(0.65 0.22 25);     /* red */
 }
 
 @layer base {

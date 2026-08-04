@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { registrarManutencaoManual } from "@/lib/manutencao-manual.functions";
@@ -20,6 +20,21 @@ import { STATUS_LABEL, STATUS_ORDER, statusClasses, progressColor, parseLocalDat
 import { ArrowLeft, Calendar, User, Hash, Factory, Pencil, ChevronDown, MessageSquare, Trash2, Wrench, ExternalLink, Plus, FileText, Link2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+
+// Estrutura de agrupamento do checklist da Lufati
+// Grupos com 1 subitem = item simples (apenas checkbox no item pai)
+// Grupos com múltiplos subitens = item-pai não checkável + subitens indentados
+const CHECKLIST_GROUPS = [
+  { nome: "Comercial",   peso: 5,  subitens: ["Comercial"] },
+  { nome: "Engenharia",  peso: 10, subitens: ["Engenharia"] },
+  { nome: "Compras",     peso: 10, subitens: ["Compras"] },
+  { nome: "Recebimento", peso: 5,  subitens: ["Recebimento"] },
+  { nome: "Caldeiraria", peso: 20, subitens: ["Corte", "Solda", "Pintura"] },
+  { nome: "Montagem",    peso: 30, subitens: ["Elétrica", "Mecânica", "Pneumática", "Programação"] },
+  { nome: "Testes",      peso: 10, subitens: ["Testes Mecânicos", "Testes Elétricos"] },
+  { nome: "Expedição",   peso: 5,  subitens: ["Expedição"] },
+  { nome: "Instalação",  peso: 5,  subitens: ["Instalação"] },
+];
 
 export const Route = createFileRoute("/_authenticated/maquinas/$id")({
   head: () => ({ meta: [{ title: "Máquina · Controle de Produção" }] }),
@@ -214,11 +229,10 @@ function MachineDetail() {
               <p className="text-sm text-muted-foreground">Marque os processos concluídos — o progresso atualiza automaticamente.</p>
             </div>
             <div className="space-y-2">
-              {processes.map((p: any) => (
-                <ProcessItem key={p.id} proc={p} onToggle={toggle} machineId={id} />
-              ))}
-              {processes.length === 0 && (
+              {processes.length === 0 ? (
                 <div className="text-sm text-muted-foreground p-6 text-center">Sem processos cadastrados.</div>
+              ) : (
+                <ChecklistGrouped processes={processes} onToggle={toggle} machineId={id} />
               )}
             </div>
           </Card>
@@ -281,7 +295,59 @@ function MachineDetail() {
   );
 }
 
-function ProcessItem({ proc, onToggle, machineId }: { proc: any; onToggle: (id: string, done: boolean) => void; machineId: string }) {
+// Renderiza o checklist agrupado: grupos com subitens aparecem com cabeçalho pai;
+// itens simples aparecem diretamente como checkbox. Processos fora do grupo ficam no final.
+function ChecklistGrouped({ processes, onToggle, machineId }: { processes: any[]; onToggle: (id: string, done: boolean) => void; machineId: string }) {
+  const matchedIds = new Set<string>();
+  const nodes: React.ReactNode[] = [];
+
+  for (const group of CHECKLIST_GROUPS) {
+    const isSingle = group.subitens.length === 1 && group.subitens[0] === group.nome;
+    const groupProcs = group.subitens
+      .map((sub) => processes.find((p: any) => p.nome === sub))
+      .filter(Boolean) as any[];
+
+    if (groupProcs.length === 0) continue;
+    groupProcs.forEach((p: any) => matchedIds.add(p.id));
+
+    if (isSingle) {
+      // Item simples — nenhum agrupamento visual
+      nodes.push(
+        <ProcessItem key={groupProcs[0].id} proc={groupProcs[0]} onToggle={onToggle} machineId={machineId} />
+      );
+    } else {
+      // Grupo com subitens
+      const totalPeso = group.peso;
+      const donePeso = groupProcs.filter((p: any) => p.concluido).reduce((s: number, p: any) => s + Number(p.peso), 0);
+      const allDone = donePeso === totalPeso;
+      nodes.push(
+        <div key={group.nome} className={`rounded-xl border border-border overflow-hidden ${allDone ? "opacity-80" : ""}`}>
+          {/* Cabeçalho do grupo */}
+          <div className="flex items-center gap-3 px-4 py-3 bg-secondary/60 border-b border-border">
+            <div className={`flex-1 font-semibold text-sm ${allDone ? "line-through text-muted-foreground" : ""}`}>{group.nome}</div>
+            <div className="text-xs text-muted-foreground tabular-nums">{donePeso}/{totalPeso}%</div>
+          </div>
+          {/* Subitens */}
+          <div className="divide-y divide-border">
+            {groupProcs.map((p: any) => (
+              <ProcessItem key={p.id} proc={p} onToggle={onToggle} machineId={machineId} isSubitem />
+            ))}
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // Processos que não se enquadram em nenhum grupo (compatibilidade retroativa)
+  const unmatched = processes.filter((p: any) => !matchedIds.has(p.id));
+  for (const p of unmatched) {
+    nodes.push(<ProcessItem key={p.id} proc={p} onToggle={onToggle} machineId={machineId} />);
+  }
+
+  return <>{nodes}</>;
+}
+
+function ProcessItem({ proc, onToggle, machineId, isSubitem = false }: { proc: any; onToggle: (id: string, done: boolean) => void; machineId: string; isSubitem?: boolean }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [obs, setObs] = useState(proc.observacao ?? "");
@@ -301,11 +367,11 @@ function ProcessItem({ proc, onToggle, machineId }: { proc: any; onToggle: (id: 
   const hasObs = !!(proc.observacao && proc.observacao.trim());
 
   return (
-    <div className={`rounded-xl border border-border bg-secondary/40 ${proc.concluido ? "opacity-80" : ""}`}>
-      <div className="flex items-center gap-4 p-4">
+    <div className={`${isSubitem ? "bg-secondary/20" : "rounded-xl border border-border bg-secondary/40"} ${proc.concluido ? "opacity-70" : ""}`}>
+      <div className="flex items-center gap-4 px-4 py-3">
         <Checkbox checked={proc.concluido} onCheckedChange={(v) => onToggle(proc.id, !!v)} />
         <div className="flex-1 min-w-0">
-          <div className={`font-medium ${proc.concluido ? "line-through text-muted-foreground" : ""}`}>{proc.nome}</div>
+          <div className={`${isSubitem ? "text-sm" : "font-medium"} ${proc.concluido ? "line-through text-muted-foreground" : ""}`}>{proc.nome}</div>
           {proc.concluido && proc.concluido_em && (
             <div className="text-xs text-muted-foreground mt-0.5">
               Concluído em {format(new Date(proc.concluido_em), "dd/MM/yyyy HH:mm")}
@@ -326,7 +392,7 @@ function ProcessItem({ proc, onToggle, machineId }: { proc: any; onToggle: (id: 
         </Button>
       </div>
       {open && (
-        <div className="px-4 pb-4 space-y-2">
+        <div className="px-4 pb-3 space-y-2">
           <Textarea
             value={obs}
             onChange={(e) => setObs(e.target.value)}

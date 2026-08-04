@@ -127,7 +127,7 @@ function MaquinaForm() {
           data_entrega: form.data_entrega,
           modelo_id: form.modelo_id,
           modelo_nome: model?.nome ?? null,
-          status: "engenharia",
+          status: "comercial",
           company_id: companyId,
         })
         .select()

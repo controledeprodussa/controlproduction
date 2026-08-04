@@ -1,17 +1,75 @@
 // Estrutura de agrupamento do checklist — compartilhada entre modelos e visualização de máquinas
-export const CHECKLIST_GROUPS = [
-  { nome: "Comercial",   subitens: ["Comercial"] },
-  { nome: "Engenharia",  subitens: ["Engenharia"] },
-  { nome: "Compras",     subitens: ["Compras"] },
-  { nome: "Recebimento", subitens: ["Recebimento"] },
-  { nome: "Caldeiraria", subitens: ["Corte", "Solda", "Pintura"] },
-  { nome: "Montagem",    subitens: ["Elétrica", "Mecânica", "Pneumática", "Programação"] },
-  { nome: "Testes",      subitens: ["Testes Mecânicos", "Testes Elétricos"] },
-  { nome: "Expedição",   subitens: ["Expedição"] },
-  { nome: "Instalação",  subitens: ["Instalação"] },
-] as const;
 
-/** Template padrão Lufati com 15 processos totalizando 100% */
+export interface ChecklistGroup {
+  nome: string;
+  peso: number;
+  subitens: string[];
+}
+
+export const CHECKLIST_GROUPS: ChecklistGroup[] = [
+  { nome: "Comercial",   peso: 5,  subitens: ["Comercial"] },
+  { nome: "Engenharia",  peso: 10, subitens: ["Engenharia"] },
+  { nome: "Compras",     peso: 10, subitens: ["Compras"] },
+  { nome: "Recebimento", peso: 5,  subitens: ["Recebimento"] },
+  { nome: "Caldeiraria", peso: 20, subitens: ["Corte", "Solda", "Pintura"] },
+  { nome: "Montagem",    peso: 30, subitens: ["Elétrica", "Mecânica", "Pneumática", "Programação"] },
+  { nome: "Testes",      peso: 10, subitens: ["Testes Mecânicos", "Testes Elétricos"] },
+  { nome: "Expedição",   peso: 5,  subitens: ["Expedição"] },
+  { nome: "Instalação",  peso: 5,  subitens: ["Instalação"] },
+];
+
+// ─── Tipos do editor agrupado ───────────────────────────────────────────────
+
+export type SubItem = { nome: string; peso: number };
+
+/**
+ * Estado do editor agrupado.
+ * isSingle=true  → item único (nome = grupNome), armazenado como 1 processo no banco
+ * isSingle=false → grupo com subitens (ex: Caldeiraria), cada subitem salvo separadamente
+ */
+export type GrupoEdit = {
+  grupNome: string;
+  isSingle: boolean;
+  subitems: SubItem[];
+};
+
+// ─── Template padrão Lufati ──────────────────────────────────────────────────
+
+/** 15 processos padrão já no formato GrupoEdit — use diretamente sem conversão */
+export const DEFAULT_GRUPOS: GrupoEdit[] = [
+  { grupNome: "Comercial",   isSingle: true,  subitems: [{ nome: "Comercial",   peso: 5  }] },
+  { grupNome: "Engenharia",  isSingle: true,  subitems: [{ nome: "Engenharia",  peso: 10 }] },
+  { grupNome: "Compras",     isSingle: true,  subitems: [{ nome: "Compras",     peso: 10 }] },
+  { grupNome: "Recebimento", isSingle: true,  subitems: [{ nome: "Recebimento", peso: 5  }] },
+  {
+    grupNome: "Caldeiraria", isSingle: false,
+    subitems: [
+      { nome: "Corte",   peso: 5  },
+      { nome: "Solda",   peso: 10 },
+      { nome: "Pintura", peso: 5  },
+    ],
+  },
+  {
+    grupNome: "Montagem", isSingle: false,
+    subitems: [
+      { nome: "Elétrica",    peso: 10 },
+      { nome: "Mecânica",    peso: 10 },
+      { nome: "Pneumática",  peso: 5  },
+      { nome: "Programação", peso: 5  },
+    ],
+  },
+  {
+    grupNome: "Testes", isSingle: false,
+    subitems: [
+      { nome: "Testes Mecânicos", peso: 5 },
+      { nome: "Testes Elétricos", peso: 5 },
+    ],
+  },
+  { grupNome: "Expedição",  isSingle: true, subitems: [{ nome: "Expedição",  peso: 5 }] },
+  { grupNome: "Instalação", isSingle: true, subitems: [{ nome: "Instalação", peso: 5 }] },
+];
+
+/** Template padrão como lista plana (para compatibilidade) */
 export const DEFAULT_PROCESSOS: { nome: string; peso: number }[] = [
   { nome: "Comercial",        peso: 5  },
   { nome: "Engenharia",       peso: 10 },
@@ -30,18 +88,7 @@ export const DEFAULT_PROCESSOS: { nome: string; peso: number }[] = [
   { nome: "Instalação",       peso: 5  },
 ];
 
-export type SubItem = { nome: string; peso: number };
-
-/**
- * Estado do editor agrupado.
- * isSingle=true  → item único (nome = grupNome), armazenado como 1 processo no banco
- * isSingle=false → grupo com subitens (ex: Caldeiraria), subitens são armazenados separadamente
- */
-export type GrupoEdit = {
-  grupNome: string;
-  isSingle: boolean;
-  subitems: SubItem[];
-};
+// ─── Funções de conversão ────────────────────────────────────────────────────
 
 /** Converte lista plana do banco em grupos para o editor */
 export function flatToGrupos(processos: { nome: string; peso: number }[]): GrupoEdit[] {
@@ -52,7 +99,7 @@ export function flatToGrupos(processos: { nome: string; peso: number }[]): Grupo
     const isSingle = g.subitens.length === 1 && g.subitens[0] === g.nome;
     const matched = g.subitens
       .map((s) => processos.find((p) => p.nome === s))
-      .filter(Boolean) as { nome: string; peso: number }[];
+      .filter((x): x is { nome: string; peso: number } => x !== undefined);
 
     if (matched.length === 0) continue;
     matched.forEach((m) => matchedNames.add(m.nome));

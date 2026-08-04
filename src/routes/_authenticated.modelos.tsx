@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { DndContext, closestCenter, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { type GrupoEdit, flatToGrupos, gruposToFlat, DEFAULT_PROCESSOS } from "@/lib/checklist";
+import { type GrupoEdit, flatToGrupos, gruposToFlat, DEFAULT_PROCESSOS, DEFAULT_GRUPOS } from "@/lib/checklist";
 
 export const Route = createFileRoute("/_authenticated/modelos")({
   head: () => ({ meta: [{ title: "Modelos · Controle de Produção" }] }),
@@ -179,6 +179,7 @@ function ProcessosEditorAgrupado({
       {/* Botões de ação */}
       <div className="flex gap-2 flex-wrap pt-1">
         <Button
+          type="button"
           variant="outline"
           size="sm"
           className="gap-1.5"
@@ -189,6 +190,7 @@ function ProcessosEditorAgrupado({
           <Plus className="size-3.5" /> Item simples
         </Button>
         <Button
+          type="button"
           variant="outline"
           size="sm"
           className="gap-1.5"
@@ -199,10 +201,11 @@ function ProcessosEditorAgrupado({
           <Plus className="size-3.5" /> Grupo com subitens
         </Button>
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           className="gap-1.5 text-muted-foreground ml-auto"
-          onClick={() => setGrupos(flatToGrupos(DEFAULT_PROCESSOS))}
+          onClick={() => setGrupos(DEFAULT_GRUPOS)}
           title="Restaurar os 15 processos padrão Lufati"
         >
           <RotateCcw className="size-3.5" /> Restaurar padrão
@@ -447,7 +450,7 @@ function EditModelDialog({ model, onClose }: { model: any; onClose: () => void }
   useEffect(() => {
     setNome(model.nome);
     setGrupos(flatToGrupos(model.processos.map((p: any) => ({ nome: p.nome, peso: Number(p.peso) }))));
-  }, [model]);
+  }, [model.id]);
 
   const total = grupos.reduce((s, g) => s + g.subitems.reduce((ss, si) => ss + Number(si.peso || 0), 0), 0);
 

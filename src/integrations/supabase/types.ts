@@ -332,6 +332,13 @@ export type Database = {
     }
     Enums: {
       machine_status:
+        | "comercial"
+        | "recebimento"
+        | "caldeiraria"
+        | "montagem"
+        | "testes"
+        | "expedicao"
+        | "instalacao"
         | "engenharia"
         | "compras"
         | "producao"

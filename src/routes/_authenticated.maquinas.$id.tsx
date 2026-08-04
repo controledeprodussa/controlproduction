@@ -17,24 +17,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProgressBar } from "@/components/ProgressBar";
 import { STATUS_LABEL, STATUS_ORDER, statusClasses, progressColor, parseLocalDate, type MachineStatus } from "@/lib/status";
+import { CHECKLIST_GROUPS } from "@/lib/checklist";
 import { ArrowLeft, Calendar, User, Hash, Factory, Pencil, ChevronDown, MessageSquare, Trash2, Wrench, ExternalLink, Plus, FileText, Link2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-
-// Estrutura de agrupamento do checklist da Lufati
-// Grupos com 1 subitem = item simples (apenas checkbox no item pai)
-// Grupos com múltiplos subitens = item-pai não checkável + subitens indentados
-const CHECKLIST_GROUPS = [
-  { nome: "Comercial",   peso: 5,  subitens: ["Comercial"] },
-  { nome: "Engenharia",  peso: 10, subitens: ["Engenharia"] },
-  { nome: "Compras",     peso: 10, subitens: ["Compras"] },
-  { nome: "Recebimento", peso: 5,  subitens: ["Recebimento"] },
-  { nome: "Caldeiraria", peso: 20, subitens: ["Corte", "Solda", "Pintura"] },
-  { nome: "Montagem",    peso: 30, subitens: ["Elétrica", "Mecânica", "Pneumática", "Programação"] },
-  { nome: "Testes",      peso: 10, subitens: ["Testes Mecânicos", "Testes Elétricos"] },
-  { nome: "Expedição",   peso: 5,  subitens: ["Expedição"] },
-  { nome: "Instalação",  peso: 5,  subitens: ["Instalação"] },
-];
 
 export const Route = createFileRoute("/_authenticated/maquinas/$id")({
   head: () => ({ meta: [{ title: "Máquina · Controle de Produção" }] }),

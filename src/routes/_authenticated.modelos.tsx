@@ -10,18 +10,17 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, Pencil, GripVertical } from "lucide-react";
+import { Plus, Trash2, Pencil, GripVertical, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { DndContext, closestCenter, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { type GrupoEdit, flatToGrupos, gruposToFlat, DEFAULT_PROCESSOS } from "@/lib/checklist";
 
 export const Route = createFileRoute("/_authenticated/modelos")({
   head: () => ({ meta: [{ title: "Modelos · Controle de Produção" }] }),
   component: ModelosPage,
 });
-
-type Processo = { nome: string; peso: number };
 
 function ModelosPage() {
   return (
@@ -36,60 +35,197 @@ function ModelosPage() {
   );
 }
 
-function ProcessosEditor({ processos, setProcessos }: { processos: Processo[]; setProcessos: (p: Processo[]) => void }) {
-  const total = processos.reduce((s, p) => s + Number(p.peso || 0), 0);
+// ─── Editor de Processos Agrupado ────────────────────────────────────────────
+
+function ProcessosEditorAgrupado({
+  grupos,
+  setGrupos,
+}: {
+  grupos: GrupoEdit[];
+  setGrupos: (g: GrupoEdit[]) => void;
+}) {
+  const total = grupos.reduce(
+    (s, g) => s + g.subitems.reduce((ss, si) => ss + Number(si.peso || 0), 0),
+    0
+  );
+
+  const updateSubitem = (gi: number, si: number, field: keyof GrupoEdit["subitems"][number], value: string | number) => {
+    setGrupos(
+      grupos.map((g, i) =>
+        i !== gi
+          ? g
+          : { ...g, subitems: g.subitems.map((s, j) => (j !== si ? s : { ...s, [field]: value })) }
+      )
+    );
+  };
+
+  const removeSubitem = (gi: number, si: number) => {
+    const next = grupos
+      .map((g, i) => (i !== gi ? g : { ...g, subitems: g.subitems.filter((_, j) => j !== si) }))
+      .filter((g) => g.subitems.length > 0);
+    setGrupos(next);
+  };
+
+  const removeGroup = (gi: number) => setGrupos(grupos.filter((_, i) => i !== gi));
+
+  const addSubitemToGroup = (gi: number) =>
+    setGrupos(
+      grupos.map((g, i) => (i !== gi ? g : { ...g, subitems: [...g.subitems, { nome: "", peso: 0 }] }))
+    );
+
+  const updateSingleName = (gi: number, nome: string) =>
+    setGrupos(grupos.map((g, i) => (i !== gi ? g : { ...g, grupNome: nome, subitems: [{ ...g.subitems[0], nome }] })));
+
+  const updateGroupName = (gi: number, nome: string) =>
+    setGrupos(grupos.map((g, i) => (i !== gi ? g : { ...g, grupNome: nome })));
+
   return (
     <div className="space-y-3">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <Label>Processos (checklist)</Label>
-        <div className={`text-sm font-medium ${total === 100 ? "text-[color:var(--status-producao)]" : "text-[color:var(--status-atrasado)]"}`}>
+        <div className={`text-sm font-medium tabular-nums ${total === 100 ? "text-[color:var(--status-producao)]" : "text-[color:var(--status-atrasado)]"}`}>
           Total: {total}%
         </div>
       </div>
+
+      {/* Grupos */}
       <div className="space-y-2">
-        {processos.map((p, i) => (
-          <div key={i} className="flex gap-2">
-            <Input
-              value={p.nome}
-              onChange={(e) => setProcessos(processos.map((x, j) => (j === i ? { ...x, nome: e.target.value } : x)))}
-              placeholder="Nome do processo"
-              className="bg-secondary border-border flex-1"
-            />
-            <Input
-              type="number"
-              value={p.peso}
-              onChange={(e) => setProcessos(processos.map((x, j) => (j === i ? { ...x, peso: Number(e.target.value) } : x)))}
-              placeholder="%"
-              className="bg-secondary border-border w-24"
-            />
-            <Button variant="ghost" size="icon" onClick={() => setProcessos(processos.filter((_, j) => j !== i))}>
-              <Trash2 className="size-4" />
-            </Button>
-          </div>
-        ))}
+        {grupos.map((g, gi) =>
+          g.isSingle ? (
+            /* Item simples */
+            <div key={gi} className="flex gap-2 items-center">
+              <Input
+                value={g.subitems[0]?.nome ?? ""}
+                onChange={(e) => updateSingleName(gi, e.target.value)}
+                placeholder="Nome do processo"
+                className="bg-secondary border-border flex-1"
+              />
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={g.subitems[0]?.peso ?? 0}
+                onChange={(e) => updateSubitem(gi, 0, "peso", Number(e.target.value))}
+                placeholder="%"
+                className="bg-secondary border-border w-20"
+              />
+              <Button variant="ghost" size="icon" onClick={() => removeGroup(gi)}>
+                <Trash2 className="size-4" />
+              </Button>
+            </div>
+          ) : (
+            /* Grupo com subitens */
+            <div key={gi} className="rounded-xl border border-border overflow-hidden">
+              {/* Cabeçalho do grupo */}
+              <div className="flex items-center gap-2 px-3 py-2 bg-secondary/60 border-b border-border">
+                <Input
+                  value={g.grupNome}
+                  onChange={(e) => updateGroupName(gi, e.target.value)}
+                  placeholder="Nome do grupo"
+                  className="bg-transparent border-none shadow-none flex-1 h-7 p-0 text-sm font-semibold focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+                <div className="text-xs text-muted-foreground tabular-nums shrink-0">
+                  {g.subitems.reduce((s, si) => s + Number(si.peso || 0), 0)}%
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1 text-xs h-7 px-2"
+                  onClick={() => addSubitemToGroup(gi)}
+                >
+                  <Plus className="size-3" /> Subitem
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7 shrink-0"
+                  onClick={() => removeGroup(gi)}
+                >
+                  <Trash2 className="size-3.5 text-[color:var(--status-atrasado)]" />
+                </Button>
+              </div>
+              {/* Subitens */}
+              <div className="divide-y divide-border">
+                {g.subitems.map((s, si) => (
+                  <div key={si} className="flex gap-2 items-center px-3 py-2 bg-secondary/20">
+                    <span className="text-xs text-muted-foreground shrink-0 select-none">↳</span>
+                    <Input
+                      value={s.nome}
+                      onChange={(e) => updateSubitem(gi, si, "nome", e.target.value)}
+                      placeholder="Nome do subitem"
+                      className="bg-secondary border-border flex-1 h-8 text-sm"
+                    />
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={s.peso}
+                      onChange={(e) => updateSubitem(gi, si, "peso", Number(e.target.value))}
+                      placeholder="%"
+                      className="bg-secondary border-border w-20 h-8 text-sm"
+                    />
+                    <Button variant="ghost" size="icon" className="size-8" onClick={() => removeSubitem(gi, si)}>
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        )}
       </div>
-      <Button variant="outline" onClick={() => setProcessos([...processos, { nome: "", peso: 0 }])} className="gap-2">
-        <Plus className="size-4" /> Adicionar processo
-      </Button>
+
+      {/* Botões de ação */}
+      <div className="flex gap-2 flex-wrap pt-1">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+          onClick={() =>
+            setGrupos([...grupos, { grupNome: "", isSingle: true, subitems: [{ nome: "", peso: 0 }] }])
+          }
+        >
+          <Plus className="size-3.5" /> Item simples
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+          onClick={() =>
+            setGrupos([...grupos, { grupNome: "Novo Grupo", isSingle: false, subitems: [{ nome: "", peso: 0 }] }])
+          }
+        >
+          <Plus className="size-3.5" /> Grupo com subitens
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 text-muted-foreground ml-auto"
+          onClick={() => setGrupos(flatToGrupos(DEFAULT_PROCESSOS))}
+          title="Restaurar os 15 processos padrão Lufati"
+        >
+          <RotateCcw className="size-3.5" /> Restaurar padrão
+        </Button>
+      </div>
     </div>
   );
 }
+
+// ─── Formulário de Novo Modelo ─────────────────────────────────────────────
 
 function ModeloForm() {
   const qc = useQueryClient();
   const companyId = useCompanyId();
   const [nome, setNome] = useState("");
-  const [processos, setProcessos] = useState<Processo[]>([
-    { nome: "Solda", peso: 30 },
-    { nome: "Pintura", peso: 20 },
-    { nome: "Montagem", peso: 50 },
-  ]);
+  const [grupos, setGrupos] = useState<GrupoEdit[]>(flatToGrupos(DEFAULT_PROCESSOS));
   const [saving, setSaving] = useState(false);
 
-  const total = processos.reduce((s, p) => s + Number(p.peso || 0), 0);
+  const total = grupos.reduce((s, g) => s + g.subitems.reduce((ss, si) => ss + Number(si.peso || 0), 0), 0);
 
   const submit = async () => {
     if (!nome.trim()) return toast.error("Informe o nome do modelo");
+    const processos = gruposToFlat(grupos);
     if (processos.some((p) => !p.nome.trim())) return toast.error("Preencha o nome de todos os processos");
     if (total !== 100) return toast.error(`O total dos pesos deve ser 100% (atual: ${total}%)`);
 
@@ -105,7 +241,7 @@ function ModeloForm() {
       if (e2) throw e2;
       toast.success("Modelo criado!");
       setNome("");
-      setProcessos([{ nome: "", peso: 0 }]);
+      setGrupos(flatToGrupos(DEFAULT_PROCESSOS));
       qc.invalidateQueries({ queryKey: ["models"] });
       qc.invalidateQueries({ queryKey: ["models-full"] });
     } catch (e: any) {
@@ -122,13 +258,15 @@ function ModeloForm() {
         <Label>Nome do Modelo</Label>
         <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Prensa Hidráulica" className="bg-secondary border-border h-11" />
       </div>
-      <ProcessosEditor processos={processos} setProcessos={setProcessos} />
+      <ProcessosEditorAgrupado grupos={grupos} setGrupos={setGrupos} />
       <Button onClick={submit} disabled={saving} className="w-full h-11">
         {saving ? "Salvando…" : "Salvar Modelo"}
       </Button>
     </Card>
   );
 }
+
+// ─── Lista de Modelos ──────────────────────────────────────────────────────
 
 function ModelosList() {
   const qc = useQueryClient();
@@ -166,16 +304,9 @@ function ModelosList() {
     const newIndex = models.findIndex((m: any) => m.id === over.id);
     if (oldIndex < 0 || newIndex < 0) return;
     const reordered = arrayMove(models as any[], oldIndex, newIndex);
-
-    // Optimistic update
     qc.setQueryData(["models-full"], reordered.map((m, i) => ({ ...m, ordem: i })));
-
     try {
-      await Promise.all(
-        reordered.map((m: any, i: number) =>
-          supabase.from("machine_models").update({ ordem: i }).eq("id", m.id),
-        ),
-      );
+      await Promise.all(reordered.map((m: any, i: number) => supabase.from("machine_models").update({ ordem: i }).eq("id", m.id)));
       qc.invalidateQueries({ queryKey: ["models"] });
       qc.invalidateQueries({ queryKey: ["models-full"] });
     } catch (err: any) {
@@ -242,6 +373,8 @@ function ModelosList() {
   );
 }
 
+// ─── Linha Sortable ────────────────────────────────────────────────────────
+
 function SortableModelRow({
   model: m,
   onToggleVisivel,
@@ -301,21 +434,26 @@ function SortableModelRow({
   );
 }
 
+// ─── Dialog de Edição ─────────────────────────────────────────────────────
+
 function EditModelDialog({ model, onClose }: { model: any; onClose: () => void }) {
   const qc = useQueryClient();
   const [nome, setNome] = useState(model.nome);
-  const [processos, setProcessos] = useState<Processo[]>(model.processos.map((p: any) => ({ nome: p.nome, peso: Number(p.peso) })));
+  const [grupos, setGrupos] = useState<GrupoEdit[]>(
+    flatToGrupos(model.processos.map((p: any) => ({ nome: p.nome, peso: Number(p.peso) })))
+  );
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setNome(model.nome);
-    setProcessos(model.processos.map((p: any) => ({ nome: p.nome, peso: Number(p.peso) })));
+    setGrupos(flatToGrupos(model.processos.map((p: any) => ({ nome: p.nome, peso: Number(p.peso) }))));
   }, [model]);
 
-  const total = processos.reduce((s, p) => s + Number(p.peso || 0), 0);
+  const total = grupos.reduce((s, g) => s + g.subitems.reduce((ss, si) => ss + Number(si.peso || 0), 0), 0);
 
   const save = async () => {
     if (!nome.trim()) return toast.error("Informe o nome");
+    const processos = gruposToFlat(grupos);
     if (processos.some((p) => !p.nome.trim())) return toast.error("Preencha o nome de todos os processos");
     if (total !== 100) return toast.error(`Total deve ser 100% (atual: ${total}%)`);
 
@@ -341,7 +479,7 @@ function EditModelDialog({ model, onClose }: { model: any; onClose: () => void }
 
   return (
     <Dialog open onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Editar modelo</DialogTitle>
         </DialogHeader>
@@ -350,7 +488,7 @@ function EditModelDialog({ model, onClose }: { model: any; onClose: () => void }
             <Label>Nome</Label>
             <Input value={nome} onChange={(e) => setNome(e.target.value)} />
           </div>
-          <ProcessosEditor processos={processos} setProcessos={setProcessos} />
+          <ProcessosEditorAgrupado grupos={grupos} setGrupos={setGrupos} />
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>

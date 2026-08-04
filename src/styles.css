@@ -41,6 +41,8 @@
   --color-status-instalacao: var(--status-instalacao);
   --color-status-entregue: var(--status-entregue);
   --color-status-atrasado: var(--status-atrasado);
+  /* alias utilitário para "no prazo" / barra de progresso */
+  --color-status-producao: var(--status-producao);
 }
 
 :root {
@@ -77,6 +79,7 @@
   --status-instalacao: oklch(0.72 0.16 220);    /* cyan */
   --status-entregue:   oklch(0.70 0.08 100);    /* light sage grey */
   --status-atrasado:   oklch(0.65 0.22 25);     /* red */
+  --status-producao:   oklch(0.72 0.18 150);    /* green — alias para "no prazo" e barras de progresso */
 }
 
 @layer base {

@@ -251,7 +251,7 @@ function MachineCard({ m }: { m: Machine }) {
           icon={Calendar}
           label="Entrega"
           value={format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
-          valueClass={atrasado ? "text-[color:var(--status-atrasado)]" : ""}
+          valueClass={atrasado ? "text-[color:var(--status-atrasado)]" : "text-[color:var(--status-producao)]"}
         />
         <div className="flex items-start gap-2 min-w-0">
           <div className="min-w-0">
@@ -357,7 +357,7 @@ function MachineTable({ machines, onRowClick }: { machines: Machine[]; onRowClic
                     <Badge className={statusClasses(m.status)}>{STATUS_LABEL[m.status]}</Badge>
                   </div>
                 </TableCell>
-                <TableCell className={`text-center hidden md:table-cell ${atrasado ? "text-[color:var(--status-atrasado)] font-medium" : ""}`}>
+                <TableCell className={`text-center hidden md:table-cell font-medium ${atrasado ? "text-[color:var(--status-atrasado)]" : "text-[color:var(--status-producao)]"}`}>
                   {format(parseLocalDate(m.data_entrega), "dd/MM/yyyy")}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">

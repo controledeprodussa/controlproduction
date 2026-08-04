@@ -48,6 +48,7 @@ export function statusClasses(s: MachineStatus): string {
     case "expedicao":  return "bg-[color:var(--status-expedicao)]/15 text-[color:var(--status-expedicao)] ring-1 ring-[color:var(--status-expedicao)]/30";
     case "instalacao": return "bg-[color:var(--status-instalacao)]/15 text-[color:var(--status-instalacao)] ring-1 ring-[color:var(--status-instalacao)]/30";
     case "entregue":   return "bg-[color:var(--status-entregue)]/20 text-muted-foreground ring-1 ring-[color:var(--status-entregue)]/30";
+    default:           return "bg-secondary text-muted-foreground ring-1 ring-border";
   }
 }
 

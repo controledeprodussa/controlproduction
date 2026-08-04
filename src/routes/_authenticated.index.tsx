@@ -182,7 +182,7 @@ function Dashboard() {
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Visão Geral</h1>
                 <p className="text-sm text-muted-foreground mt-0.5">Produção em tempo real</p>
               </div>
-              <div className="hidden md:flex flex-wrap gap-1.5 flex-1 max-w-5xl justify-end">
+              <div className="hidden md:flex flex-wrap gap-1.5 flex-1 max-w-none justify-start">
                 {STATUS_ORDER.map((status) => (
                   <MiniStat key={status} label={STATUS_LABEL[status]} value={count(status)} status={status} />
                 ))}

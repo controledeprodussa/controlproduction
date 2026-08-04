@@ -200,7 +200,7 @@ function ManutencoesDashboard() {
     return new Set(recent.map(visitaKey)).size;
   }, [rows]);
 
-  const maquinas = useMemo(() => new Set(rows.map((m) => m.numero_serie)).size, [rows]);
+  const maquinas = useMemo(() => new Set(rows.map((m) => m.numero_serie).filter(Boolean)).size, [rows]);
   const totalClientes = useMemo(
     () => new Set(rows.map((m) => (m.cliente ?? "").trim().toUpperCase()).filter(Boolean)).size,
     [rows],
@@ -240,6 +240,7 @@ function ManutencoesDashboard() {
   const topMaquinas = useMemo(() => {
     const map = new Map<string, number>();
     for (const m of rows) {
+      if (!m.numero_serie) continue;
       const k = `${m.numero_serie} · ${(m.cliente ?? "").trim().toUpperCase()}`;
       map.set(k, (map.get(k) ?? 0) + 1);
     }
@@ -395,7 +396,7 @@ function ManutencoesDashboard() {
                           {format(parseLocalDate(m.data_visita), "dd/MM/yyyy")}
                         </TableCell>
                         <TableCell className="text-sm">
-                          <div className="font-medium">{m.numero_serie}</div>
+                          <div className="font-medium">{m.numero_serie || "Sem máquina identificada"}</div>
                           <div className="text-xs text-muted-foreground truncate max-w-[180px]">{m.cliente}</div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell text-sm">

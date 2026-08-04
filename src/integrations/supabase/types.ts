@@ -32,6 +32,21 @@ export type Database = {
         }
         Relationships: []
       }
+      de_para_tecnicos: {
+        Row: {
+          nome_correto: string
+          variacao: string
+        }
+        Insert: {
+          nome_correto: string
+          variacao: string
+        }
+        Update: {
+          nome_correto?: string
+          variacao?: string
+        }
+        Relationships: []
+      }
       machine_models: {
         Row: {
           company_id: string
@@ -332,6 +347,11 @@ export type Database = {
     }
     Enums: {
       machine_status:
+        | "engenharia"
+        | "compras"
+        | "producao"
+        | "embarque"
+        | "entregue"
         | "comercial"
         | "recebimento"
         | "caldeiraria"
@@ -339,11 +359,6 @@ export type Database = {
         | "testes"
         | "expedicao"
         | "instalacao"
-        | "engenharia"
-        | "compras"
-        | "producao"
-        | "embarque"
-        | "entregue"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -477,6 +492,13 @@ export const Constants = {
         "producao",
         "embarque",
         "entregue",
+        "comercial",
+        "recebimento",
+        "caldeiraria",
+        "montagem",
+        "testes",
+        "expedicao",
+        "instalacao",
       ],
     },
   },

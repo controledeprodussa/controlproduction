@@ -4,10 +4,11 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/ProgressBar";
 import { STATUS_LABEL, STATUS_ORDER, statusClasses, progressColor, type MachineStatus } from "@/lib/status";
-import { Search } from "lucide-react";
+import { Search, ArrowUpAZ, ArrowDownZA } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -30,11 +31,12 @@ type Machine = {
 function MachinesList() {
   const [filter, setFilter] = useState<MachineStatus | "todos">("todos");
   const [search, setSearch] = useState("");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const { data: machines = [] } = useQuery({
     queryKey: ["machines"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("machines").select("*").order("data_entrega");
+      const { data, error } = await supabase.from("machines").select("*");
       if (error) throw error;
       return data as Machine[];
     },
@@ -51,6 +53,13 @@ function MachinesList() {
     return matchesStatus && matchesSearch;
   });
 
+  const sorted = [...filtered].sort((a, b) => {
+    const valA = a.numero_serie || "";
+    const valB = b.numero_serie || "";
+    const comparison = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: "base" });
+    return sortDirection === "asc" ? comparison : -comparison;
+  });
+
   return (
     <div className="space-y-6">
       <header>
@@ -58,7 +67,7 @@ function MachinesList() {
         <p className="text-muted-foreground mt-1">Todas as máquinas registradas</p>
       </header>
 
-      <div className="flex flex-col md:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
@@ -68,6 +77,23 @@ function MachinesList() {
             className="pl-10 h-11 rounded-xl bg-card border-border"
           />
         </div>
+        <Button
+          variant="outline"
+          onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))}
+          className="h-11 px-4 gap-2 rounded-xl border-border bg-card shrink-0"
+        >
+          {sortDirection === "asc" ? (
+            <>
+              <ArrowUpAZ className="size-4" />
+              <span>Série: Crescente</span>
+            </>
+          ) : (
+            <>
+              <ArrowDownZA className="size-4" />
+              <span>Série: Decrescente</span>
+            </>
+          )}
+        </Button>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -80,9 +106,9 @@ function MachinesList() {
       </div>
 
       <div className="space-y-2">
-        {filtered.length === 0 ? (
+        {sorted.length === 0 ? (
           <Card className="p-10 text-center text-muted-foreground">Nenhuma máquina encontrada.</Card>
-        ) : filtered.map((m) => {
+        ) : sorted.map((m) => {
           const atrasado = m.status !== "entregue" && new Date(m.data_entrega) < new Date(new Date().toDateString());
           const progresso = Math.round(Number(m.progresso));
           return (

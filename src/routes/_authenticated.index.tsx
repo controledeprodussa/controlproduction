@@ -182,7 +182,7 @@ function Dashboard() {
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Visão Geral</h1>
                 <p className="text-sm text-muted-foreground mt-0.5">Produção em tempo real</p>
               </div>
-              <div className="hidden md:grid grid-cols-5 lg:grid-cols-10 gap-2 flex-1 max-w-5xl">
+              <div className="hidden md:flex flex-wrap gap-1.5 flex-1 max-w-5xl justify-end">
                 {STATUS_ORDER.map((status) => (
                   <MiniStat key={status} label={STATUS_LABEL[status]} value={count(status)} status={status} />
                 ))}
@@ -288,9 +288,9 @@ function StatCard({ label, value, status }: { label: string; value: string | num
 
 function MiniStat({ label, value, status }: { label: string; value: string | number; status: MachineStatus }) {
   return (
-    <div className="rounded-xl border border-border bg-card px-3 py-2 flex items-center justify-between gap-2">
-      <div className="text-[10px] uppercase tracking-wider text-white font-medium truncate">{label}</div>
-      <div className="text-xl font-bold tabular-nums" style={{ color: `var(--status-${status})` }}>{value}</div>
+    <div className="rounded-xl border border-border bg-card px-2.5 py-1.5 flex items-center justify-between gap-1.5 min-w-0">
+      <div className="text-[9px] uppercase tracking-wider text-white font-medium whitespace-nowrap">{label}</div>
+      <div className="text-sm font-bold tabular-nums shrink-0" style={{ color: `var(--status-${status})` }}>{value}</div>
     </div>
   );
 }

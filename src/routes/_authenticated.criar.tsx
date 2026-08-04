@@ -76,6 +76,24 @@ function MaquinaForm() {
   const [form, setForm] = useState({ nome: "", numero_serie: "", cliente: "", data_entrega: "", modelo_id: "" });
   const [processos, setProcessos] = useState<Processo[]>([]);
   const [saving, setSaving] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const { data: clients = [] } = useQuery({
+    queryKey: ["existing-clients"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("machines")
+        .select("cliente")
+        .order("cliente");
+      if (error) throw error;
+      const names = data.map((d: any) => d.cliente as string).filter(Boolean);
+      return Array.from(new Set(names));
+    },
+  });
+
+  const suggestions = clients.filter((c) =>
+    c.toLowerCase().startsWith(form.cliente.trim().toLowerCase())
+  );
 
   const { data: models = [] } = useQuery({
     queryKey: ["models", "visiveis"],
@@ -161,9 +179,37 @@ function MaquinaForm() {
           <Label>Número de Série</Label>
           <Input value={form.numero_serie} onChange={(e) => setForm({ ...form, numero_serie: e.target.value })} placeholder="Ex: 555" className="bg-secondary border-border h-11" />
         </div>
-        <div className="space-y-2">
+        <div className="space-y-2 relative">
           <Label>Cliente</Label>
-          <Input value={form.cliente} onChange={(e) => setForm({ ...form, cliente: e.target.value })} placeholder="" className="bg-secondary border-border h-11" />
+          <Input
+            value={form.cliente}
+            onChange={(e) => {
+              setForm({ ...form, cliente: e.target.value });
+              setShowSuggestions(true);
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setShowSuggestions(false)}
+            placeholder="Digite o nome do cliente"
+            className="bg-secondary border-border h-11"
+            autoComplete="off"
+          />
+          {showSuggestions && form.cliente.trim() && suggestions.length > 0 && (
+            <div className="absolute z-50 left-0 right-0 top-[calc(100%+4px)] max-h-60 overflow-y-auto rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-80 slide-in-from-top-1">
+              {suggestions.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onMouseDown={() => {
+                    setForm({ ...form, cliente: c });
+                    setShowSuggestions(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="space-y-2">
           <Label>Data de Entrega</Label>

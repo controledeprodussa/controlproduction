@@ -279,10 +279,23 @@ function ModelosList() {
   const { data: models = [] } = useQuery({
     queryKey: ["models-full"],
     queryFn: async () => {
-      const { data: ms, error } = await supabase.from("machine_models").select("id, nome, created_at, visivel_registro, ordem").order("ordem", { ascending: true }).order("created_at", { ascending: true });
+      const { data: ms, error } = await supabase
+        .from("machine_models")
+        .select(`
+          id, nome, created_at, visivel_registro, ordem,
+          machine_process_templates (
+            id, model_id, nome, peso, ordem
+          )
+        `)
+        .order("ordem", { ascending: true })
+        .order("created_at", { ascending: true });
       if (error) throw error;
-      const { data: tpls } = await supabase.from("machine_process_templates").select("*").order("ordem");
-      return (ms ?? []).map((m) => ({ ...m, processos: (tpls ?? []).filter((t) => t.model_id === m.id) }));
+      return (ms ?? []).map((m: any) => ({
+        ...m,
+        processos: (m.machine_process_templates ?? [])
+          .map((p: any) => ({ ...p, peso: Number(p.peso) }))
+          .sort((a: any, b: any) => a.ordem - b.ordem),
+      }));
     },
   });
 

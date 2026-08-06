@@ -81,13 +81,8 @@
   --status-atrasado:   oklch(0.65 0.22 25);     /* red */
   --status-producao:   oklch(0.72 0.18 150);    /* green — alias para "no prazo" e barras de progresso */
 
-  /* Paleta viva e consistente para os gráficos */
+  /* Substitui o preto nos gráficos sem alterar as cores existentes */
   --chart-purple:      oklch(0.68 0.22 300);
-  --chart-pink:        oklch(0.70 0.22 350);
-  --chart-blue:        oklch(0.64 0.20 255);
-  --chart-deep-blue:   oklch(0.50 0.20 275);
-  --chart-magenta:     oklch(0.66 0.24 325);
-  --chart-sky:         oklch(0.70 0.17 220);
 }
 
 @layer base {

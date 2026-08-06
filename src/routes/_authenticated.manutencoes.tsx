@@ -321,10 +321,10 @@ function ManutencoesDashboard() {
 
       {/* Indicadores */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        <Stat icon={Wrench} label="Total de visitas" value={totalVisitas} color="var(--status-engenharia)" />
-        <Stat icon={CalendarClock} label="Últimos 30 dias" value={ultimos30} color="var(--status-producao)" />
-        <Stat icon={Cog} label="Máquinas atendidas" value={maquinas} color="var(--status-embarque)" />
-        <Stat icon={Building2} label="Clientes atendidos" value={totalClientes} color="var(--status-compras)" />
+        <Stat icon={Wrench} label="Total de visitas" value={totalVisitas} color="var(--chart-purple)" />
+        <Stat icon={CalendarClock} label="Últimos 30 dias" value={ultimos30} color="var(--chart-pink)" />
+        <Stat icon={Cog} label="Máquinas atendidas" value={maquinas} color="var(--chart-blue)" />
+        <Stat icon={Building2} label="Clientes atendidos" value={totalClientes} color="var(--chart-deep-blue)" />
       </div>
 
       {isLoading ? (
@@ -336,8 +336,8 @@ function ManutencoesDashboard() {
               <AreaChart data={porMes} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="grad-manut" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--status-engenharia)" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="var(--status-engenharia)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="var(--chart-purple)" stopOpacity={0.45} />
+                  <stop offset="100%" stopColor="var(--chart-purple)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
@@ -348,7 +348,7 @@ function ManutencoesDashboard() {
                   type="monotone"
                   dataKey="total"
                   name="Manutenções"
-                  stroke="var(--status-engenharia)"
+                  stroke="var(--chart-purple)"
                   strokeWidth={2}
                   fill="url(#grad-manut)"
                 />
@@ -358,10 +358,10 @@ function ManutencoesDashboard() {
 
           <div className="grid gap-4 lg:grid-cols-2">
             <ChartCard title="Top clientes" subtitle="Maior número de manutenções">
-              <HBar data={topClientes} color="var(--status-producao)" />
+              <HBar data={topClientes} color="var(--chart-pink)" />
             </ChartCard>
             <ChartCard title="Top máquinas" subtitle="Nº de série · cliente">
-              <HBar data={topMaquinas} color="var(--status-embarque)" width={190} />
+              <HBar data={topMaquinas} color="var(--chart-deep-blue)" width={190} />
             </ChartCard>
           </div>
 

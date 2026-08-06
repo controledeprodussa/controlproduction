@@ -323,7 +323,7 @@ function ManutencoesDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <Stat icon={Wrench} label="Total de visitas" value={totalVisitas} color="var(--status-engenharia)" />
         <Stat icon={CalendarClock} label="Últimos 30 dias" value={ultimos30} color="var(--status-producao)" />
-        <Stat icon={Cog} label="Máquinas atendidas" value={maquinas} color="var(--status-embarque)" />
+        <Stat icon={Cog} label="Máquinas atendidas" value={maquinas} color="var(--status-engenharia)" />
         <Stat icon={Building2} label="Clientes atendidos" value={totalClientes} color="var(--status-compras)" />
       </div>
 

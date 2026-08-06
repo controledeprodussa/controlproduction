@@ -8,7 +8,7 @@ export interface ChecklistGroup {
 
 export const CHECKLIST_GROUPS: ChecklistGroup[] = [
   { nome: "Comercial",   peso: 5,  subitens: ["Comercial"] },
-  { nome: "Engenharia",  peso: 10, subitens: ["Engenharia"] },
+  { nome: "Engenharia",  peso: 10, subitens: ["Engenharia mecânica", "Engenharia elétrica"] },
   { nome: "Compras",     peso: 10, subitens: ["Compras"] },
   { nome: "Recebimento", peso: 5,  subitens: ["Recebimento"] },
   { nome: "Caldeiraria", peso: 20, subitens: ["Corte", "Solda", "Pintura"] },
@@ -35,10 +35,16 @@ export type GrupoEdit = {
 
 // ─── Template padrão Lufati ──────────────────────────────────────────────────
 
-/** 15 processos padrão já no formato GrupoEdit — use diretamente sem conversão */
+/** 16 processos padrão já no formato GrupoEdit — use diretamente sem conversão */
 export const DEFAULT_GRUPOS: GrupoEdit[] = [
   { grupNome: "Comercial",   isSingle: true,  subitems: [{ nome: "Comercial",   peso: 5  }] },
-  { grupNome: "Engenharia",  isSingle: true,  subitems: [{ nome: "Engenharia",  peso: 10 }] },
+  {
+    grupNome: "Engenharia", isSingle: false,
+    subitems: [
+      { nome: "Engenharia mecânica", peso: 5 },
+      { nome: "Engenharia elétrica", peso: 5 },
+    ],
+  },
   { grupNome: "Compras",     isSingle: true,  subitems: [{ nome: "Compras",     peso: 10 }] },
   { grupNome: "Recebimento", isSingle: true,  subitems: [{ nome: "Recebimento", peso: 5  }] },
   {
@@ -71,21 +77,22 @@ export const DEFAULT_GRUPOS: GrupoEdit[] = [
 
 /** Template padrão como lista plana (para compatibilidade) */
 export const DEFAULT_PROCESSOS: { nome: string; peso: number }[] = [
-  { nome: "Comercial",        peso: 5  },
-  { nome: "Engenharia",       peso: 10 },
-  { nome: "Compras",          peso: 10 },
-  { nome: "Recebimento",      peso: 5  },
-  { nome: "Corte",            peso: 5  },
-  { nome: "Solda",            peso: 10 },
-  { nome: "Pintura",          peso: 5  },
-  { nome: "Elétrica",         peso: 10 },
-  { nome: "Mecânica",         peso: 10 },
-  { nome: "Pneumática",       peso: 5  },
-  { nome: "Programação",      peso: 5  },
-  { nome: "Testes Mecânicos", peso: 5  },
-  { nome: "Testes Elétricos", peso: 5  },
-  { nome: "Expedição",        peso: 5  },
-  { nome: "Instalação",       peso: 5  },
+  { nome: "Comercial",          peso: 5  },
+  { nome: "Engenharia mecânica", peso: 5  },
+  { nome: "Engenharia elétrica", peso: 5  },
+  { nome: "Compras",            peso: 10 },
+  { nome: "Recebimento",        peso: 5  },
+  { nome: "Corte",              peso: 5  },
+  { nome: "Solda",              peso: 10 },
+  { nome: "Pintura",            peso: 5  },
+  { nome: "Elétrica",           peso: 10 },
+  { nome: "Mecânica",           peso: 10 },
+  { nome: "Pneumática",         peso: 5  },
+  { nome: "Programação",        peso: 5  },
+  { nome: "Testes Mecânicos",   peso: 5  },
+  { nome: "Testes Elétricos",   peso: 5  },
+  { nome: "Expedição",          peso: 5  },
+  { nome: "Instalação",         peso: 5  },
 ];
 
 // ─── Funções de conversão ────────────────────────────────────────────────────

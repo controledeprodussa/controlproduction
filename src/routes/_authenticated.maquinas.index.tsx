@@ -31,7 +31,7 @@ type Machine = {
 function MachinesList() {
   const [filter, setFilter] = useState<MachineStatus | "todos">("todos");
   const [search, setSearch] = useState("");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const { data: machines = [] } = useQuery({
     queryKey: ["machines"],
@@ -54,8 +54,24 @@ function MachinesList() {
   });
 
   const sorted = [...filtered].sort((a, b) => {
-    const valA = a.numero_serie || "";
-    const valB = b.numero_serie || "";
+    const valA = (a.numero_serie || "").trim();
+    const valB = (b.numero_serie || "").trim();
+
+    const isAStandard = /^\d+$/.test(valA);
+    const isBStandard = /^\d+$/.test(valB);
+
+    // Standard format (digits only) always comes first
+    if (isAStandard && !isBStandard) return -1;
+    if (!isAStandard && isBStandard) return 1;
+
+    // Both are standard format, compare numerically
+    if (isAStandard && isBStandard) {
+      const numA = parseInt(valA, 10);
+      const numB = parseInt(valB, 10);
+      return sortDirection === "asc" ? numA - numB : numB - numA;
+    }
+
+    // Both are non-standard format, compare alphabetically
     const comparison = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: "base" });
     return sortDirection === "asc" ? comparison : -comparison;
   });

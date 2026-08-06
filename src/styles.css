@@ -45,10 +45,10 @@
   --color-status-producao: var(--status-producao);
 }
 
+/* ─── Base fallback: HSL vibrante para TODOS os navegadores (Chrome 28+, WebOS, Toshiba TV) ─── */
 :root {
   --radius: 1rem;
 
-  /* Default HSL Fallback (Vibrant Tailwind-like palette for older browsers/WebOS/LG TV) */
   --background: hsl(224, 71%, 4%);
   --foreground: hsl(210, 40%, 98%);
   --card: hsl(224, 71%, 7%);
@@ -69,22 +69,25 @@
   --input: hsl(224, 71%, 12%);
   --ring: hsl(217, 91%, 60%);
 
-  --status-comercial:  hsl(215, 16%, 70%);       /* light gray */
-  --status-engenharia: hsl(217, 91%, 60%);       /* blue */
-  --status-compras:    hsl(45, 93%, 47%);        /* yellow/gold */
-  --status-recebimento:hsl(175, 77%, 40%);       /* teal */
-  --status-caldeiraria:hsl(250, 89%, 65%);       /* indigo */
-  --status-montagem:   hsl(280, 87%, 62%);       /* violet/purple */
-  --status-testes:     hsl(142, 69%, 45%);       /* emerald/green */
-  --status-expedicao:  hsl(330, 81%, 50%);       /* magenta/rose */
-  --status-instalacao: hsl(190, 90%, 50%);       /* cyan */
-  --status-entregue:   hsl(25, 95%, 53%);        /* orange */
-  --status-atrasado:   hsl(350, 89%, 60%);       /* red */
-  --status-producao:   hsl(142, 69%, 45%);       /* green */
+  --status-comercial:  hsl(215, 16%, 70%);
+  --status-engenharia: hsl(217, 91%, 60%);
+  --status-compras:    hsl(45, 93%, 47%);
+  --status-recebimento:hsl(175, 77%, 40%);
+  --status-caldeiraria:hsl(250, 89%, 65%);
+  --status-montagem:   hsl(280, 87%, 62%);
+  --status-testes:     hsl(142, 69%, 45%);
+  --status-expedicao:  hsl(330, 81%, 50%);
+  --status-instalacao: hsl(190, 90%, 50%);
+  --status-entregue:   hsl(25, 95%, 53%);
+  --status-atrasado:   hsl(350, 89%, 60%);
+  --status-producao:   hsl(142, 69%, 45%);
   --chart-purple:      hsl(280, 87%, 62%);
+}
 
-  /* Premium OKLCH palette for modern browsers supporting wide color gamut */
-  @supports (color: oklch(0% 0 0)) {
+/* ─── Override premium oklch para navegadores modernos (Chrome 111+) ─── */
+/* @supports em nível raiz: suportado desde Chrome 28. Nesting dentro de :root requer Chrome 112+. */
+@supports (color: oklch(0% 0 0)) {
+  :root {
     --background: oklch(0.16 0.012 260);
     --foreground: oklch(0.98 0.005 260);
     --card: oklch(0.21 0.014 260);
@@ -109,7 +112,7 @@
     --status-engenharia: oklch(0.72 0.17 250);
     --status-compras:    oklch(0.82 0.15 90);
     --status-recebimento:oklch(0.76 0.14 175);
-    --status-caldeiraria: oklch(0.68 0.16 280);
+    --status-caldeiraria:oklch(0.68 0.16 280);
     --status-montagem:   oklch(0.70 0.19 310);
     --status-testes:     oklch(0.75 0.16 145);
     --status-expedicao:  oklch(0.66 0.20 340);

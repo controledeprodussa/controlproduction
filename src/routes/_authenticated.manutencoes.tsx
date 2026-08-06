@@ -57,12 +57,12 @@ type Manutencao = {
 };
 
 const CHART_COLORS = [
-  "var(--status-engenharia)",
-  "var(--status-producao)",
-  "var(--status-embarque)",
-  "var(--status-compras)",
-  "var(--status-entregue)",
-  "var(--status-atrasado)",
+  "var(--chart-purple)",
+  "var(--chart-pink)",
+  "var(--chart-blue)",
+  "var(--chart-deep-blue)",
+  "var(--chart-magenta)",
+  "var(--chart-sky)",
 ];
 
 const PAGE_SIZE = 10;

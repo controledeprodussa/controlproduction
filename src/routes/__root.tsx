@@ -58,6 +58,8 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="pt-BR">
       <head>
+        {/* Polyfills para Smart TVs antigas (LG webOS, Philco, etc.) — precisa rodar antes do bundle */}
+        <script src="/polyfills.js" />
         <HeadContent />
       </head>
       <body>

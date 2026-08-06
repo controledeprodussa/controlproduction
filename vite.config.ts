@@ -35,7 +35,9 @@ export default defineConfig({
       }),
     ],
     build: {
-      target: "es2018",
+      // Smart TVs antigas (LG webOS 3/4, Philco) rodam Chromium bem antigo
+      target: ["es2015", "chrome53"],
+      cssTarget: "chrome53",
     },
   },
 });

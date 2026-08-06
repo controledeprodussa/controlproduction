@@ -6,6 +6,26 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import babel from "vite-plugin-babel";
+import legacy from "@vitejs/plugin-legacy";
+
+/**
+ * Wraps every sub-plugin returned by plugin-legacy so they only apply to the
+ * "client" Vite environment (Vite 6 Environment API).
+ * This prevents SystemJS/legacy helpers from being injected into Nitro's SSR
+ * build, which would cause "Rolldown failed to resolve import '_'" errors.
+ */
+function clientOnlyLegacy(): any[] {
+  return legacy({
+    targets: ["chrome >= 53", "safari >= 10", "not IE 11"],
+    additionalLegacyPolyfills: ["regenerator-runtime/runtime"],
+  }).map((plugin: any) => ({
+    ...plugin,
+    // Vite 6 Environment API: limits the plugin to the client environment only
+    applyToEnvironment(env: { name: string }) {
+      return env.name === "client";
+    },
+  }));
+}
 
 export default defineConfig({
   tanstackStart: {
@@ -15,6 +35,11 @@ export default defineConfig({
   },
   vite: {
     plugins: [
+      // Generates <script nomodule> bundles for old TV browsers (Chrome < 61)
+      // that completely ignore <script type="module">, causing white screens.
+      // applyToEnvironment ensures it never touches the SSR/Nitro build.
+      ...clientOnlyLegacy(),
+
       // Transpiles modern JS syntax (?.  ??  ??=  ||=  &&=) for WebOS/LG TV (old Chromium).
       // Applied only to pre-compiled .js/.mjs in node_modules and project source.
       babel({

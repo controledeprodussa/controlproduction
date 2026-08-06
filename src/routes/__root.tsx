@@ -58,6 +58,8 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="pt-BR">
       <head>
+        {/* SystemJS — necessário para o bundle legado (nomodule) gerado pelo plugin-legacy */}
+        <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.3/dist/s.min.js"></script>
         {/* Polyfills para Smart TVs antigas (LG webOS, Philco, etc.) — precisa rodar antes do bundle */}
         <script src="/polyfills.js" />
         <HeadContent />

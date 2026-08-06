@@ -62,18 +62,24 @@ function AuthPage() {
             <div className="space-y-2">
               <Label>Usuário</Label>
               <Input
-                required autoFocus autoComplete="username"
+                type="text"
+                required
+                autoComplete="username"
                 value={usuario}
                 onChange={(e) => setUsuario(e.target.value)}
+                onClick={(e) => e.currentTarget.focus()}
                 className="bg-secondary border-border h-11"
               />
             </div>
             <div className="space-y-2">
               <Label>Senha</Label>
               <Input
-                type="password" required autoComplete="current-password"
+                type="password"
+                required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onClick={(e) => e.currentTarget.focus()}
                 className="bg-secondary border-border h-11"
               />
             </div>

@@ -58,11 +58,34 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="pt-BR">
       <head>
-        {/* SystemJS — necessário para o bundle legado (nomodule) gerado pelo plugin-legacy */}
-        <script src="https://cdn.jsdelivr.net/npm/systemjs@6.14.3/dist/s.min.js"></script>
         {/* Polyfills para Smart TVs antigas (LG webOS, Philco, etc.) — precisa rodar antes do bundle */}
         <script src="/polyfills.js" />
         <HeadContent />
+        {/*
+          noModule: só é executado em browsers que NÃO suportam <script type="module">.
+          Isso inclui LG WebOS 3/4 e outros browsers de TV com Chromium < 61.
+          Nesses casos exibimos uma tela de erro clara em vez de tela branca.
+        */}
+        <script
+          noModule
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var s = document.createElement('style');
+                s.textContent = 'body{margin:0;background:#0f0f0f;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;}';
+                document.head.appendChild(s);
+                document.body.innerHTML = '<div style="text-align:center;padding:40px;color:#fff;max-width:480px">'
+                  + '<div style="font-size:64px;margin-bottom:24px">📺</div>'
+                  + '<h1 style="font-size:22px;font-weight:700;margin:0 0 16px">Navegador desatualizado</h1>'
+                  + '<p style="color:#aaa;font-size:15px;line-height:1.6;margin:0">'
+                  + 'O aplicativo <strong style="color:#fff">Controle de Produ\u00e7\u00e3o</strong> requer um navegador moderno.<br><br>'
+                  + 'Acesse pelo <strong style="color:#fff">celular</strong>, <strong style="color:#fff">computador</strong> ou uma <strong style="color:#fff">Android TV</strong> para utiliz\u00e1-lo.'
+                  + '</p>'
+                  + '</div>';
+              })();
+            `,
+          }}
+        />
       </head>
       <body>
         {children}

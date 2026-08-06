@@ -12,4 +12,12 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    build: {
+      // Target ES2018 for broader browser compatibility (WebOS/LG TV, older Chromium).
+      // Note: @vitejs/plugin-legacy is incompatible with this project's Nitro+Rolldown bundler.
+      // The primary WebOS fix is converting oklch() colors to hsl() in styles.css.
+      target: "es2018",
+    },
+  },
 });

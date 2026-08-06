@@ -47,42 +47,42 @@
 
 :root {
   --radius: 1rem;
-  /* Dark theme by default */
-  --background: oklch(0.16 0.012 260);
-  --foreground: oklch(0.98 0.005 260);
-  --card: oklch(0.21 0.014 260);
-  --card-foreground: oklch(0.98 0.005 260);
-  --popover: oklch(0.21 0.014 260);
-  --popover-foreground: oklch(0.98 0.005 260);
-  --primary: oklch(0.72 0.17 250);
-  --primary-foreground: oklch(0.16 0.012 260);
-  --secondary: oklch(0.27 0.018 260);
-  --secondary-foreground: oklch(0.98 0.005 260);
-  --muted: oklch(0.27 0.018 260);
-  --muted-foreground: oklch(0.68 0.02 260);
-  --accent: oklch(0.30 0.025 260);
-  --accent-foreground: oklch(0.98 0.005 260);
-  --destructive: oklch(0.65 0.22 25);
-  --destructive-foreground: oklch(0.98 0.005 260);
-  --border: oklch(0.30 0.018 260);
-  --input: oklch(0.27 0.018 260);
-  --ring: oklch(0.72 0.17 250);
+  /* Dark theme — converted from oklch to hsl for WebOS/LG TV (Chromium 53+) compatibility */
+  --background: hsl(238, 14%, 10%);
+  --foreground: hsl(238, 10%, 97%);
+  --card: hsl(238, 14%, 14%);
+  --card-foreground: hsl(238, 10%, 97%);
+  --popover: hsl(238, 14%, 14%);
+  --popover-foreground: hsl(238, 10%, 97%);
+  --primary: hsl(232, 70%, 58%);
+  --primary-foreground: hsl(238, 14%, 10%);
+  --secondary: hsl(238, 14%, 18%);
+  --secondary-foreground: hsl(238, 10%, 97%);
+  --muted: hsl(238, 14%, 18%);
+  --muted-foreground: hsl(238, 10%, 55%);
+  --accent: hsl(238, 16%, 21%);
+  --accent-foreground: hsl(238, 10%, 97%);
+  --destructive: hsl(18, 78%, 47%);
+  --destructive-foreground: hsl(238, 10%, 97%);
+  --border: hsl(238, 13%, 21%);
+  --input: hsl(238, 14%, 18%);
+  --ring: hsl(232, 70%, 58%);
 
-  --status-comercial:  oklch(0.80 0.01 260);     /* light gray */
-  --status-engenharia: oklch(0.72 0.17 250);    /* blue */
-  --status-compras:    oklch(0.82 0.15 90);     /* yellow/gold */
-  --status-recebimento:oklch(0.76 0.14 175);    /* teal */
-  --status-caldeiraria:oklch(0.68 0.16 280);    /* indigo */
-  --status-montagem:   oklch(0.70 0.19 310);    /* violet/purple */
-  --status-testes:     oklch(0.75 0.16 145);    /* emerald/green */
-  --status-expedicao:  oklch(0.66 0.20 340);    /* magenta/rose */
-  --status-instalacao: oklch(0.72 0.16 220);    /* cyan */
-  --status-entregue:   oklch(0.70 0.18 55);     /* orange */
-  --status-atrasado:   oklch(0.65 0.22 25);     /* red */
-  --status-producao:   oklch(0.72 0.18 150);    /* green — alias para "no prazo" e barras de progresso */
+  --status-comercial:  hsl(238, 8%, 79%);        /* light gray */
+  --status-engenharia: hsl(232, 70%, 58%);       /* blue */
+  --status-compras:    hsl(52, 78%, 64%);        /* yellow/gold */
+  --status-recebimento:hsl(168, 56%, 56%);       /* teal */
+  --status-caldeiraria:hsl(268, 56%, 54%);       /* indigo */
+  --status-montagem:   hsl(295, 62%, 54%);       /* violet/purple */
+  --status-testes:     hsl(148, 56%, 52%);       /* emerald/green */
+  --status-expedicao:  hsl(342, 68%, 52%);       /* magenta/rose */
+  --status-instalacao: hsl(202, 64%, 56%);       /* cyan */
+  --status-entregue:   hsl(36, 74%, 54%);        /* orange */
+  --status-atrasado:   hsl(18, 78%, 47%);        /* red */
+  --status-producao:   hsl(152, 62%, 50%);       /* green — alias para "no prazo" e barras de progresso */
 
   /* Substitui o preto nos gráficos sem alterar as cores existentes */
-  --chart-purple:      oklch(0.68 0.22 300);
+  --chart-purple:      hsl(292, 76%, 56%);
 }
 
 @layer base {

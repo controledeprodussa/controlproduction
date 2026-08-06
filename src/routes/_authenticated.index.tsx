@@ -176,12 +176,8 @@ function Dashboard() {
 
       {fullscreen && (
         <div className="fixed inset-0 z-50 bg-background overflow-auto">
-          <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-6 md:px-10 py-5 bg-background/95 backdrop-blur border-b border-border">
-            <div className="flex items-center gap-6 min-w-0 flex-1">
-              <div className="shrink-0">
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Visão Geral</h1>
-                <p className="text-sm text-muted-foreground mt-0.5">Produção em tempo real</p>
-              </div>
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-6 md:px-10 py-3 bg-background/95 backdrop-blur border-b border-border">
+            <div className="flex items-center gap-4 min-w-0 flex-1">
               <div className="hidden md:flex flex-wrap gap-1.5 flex-1 max-w-none justify-start">
                 {STATUS_ORDER.map((status) => (
                   <MiniStat key={status} label={STATUS_LABEL[status]} value={count(status)} status={status} />

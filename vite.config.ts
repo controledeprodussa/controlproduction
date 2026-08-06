@@ -5,6 +5,7 @@
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import babel from "vite-plugin-babel";
 
 export default defineConfig({
   tanstackStart: {
@@ -13,10 +14,27 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    plugins: [
+      // Transpiles modern JS syntax (?.  ??  ??=  ||=  &&=) for WebOS/LG TV (old Chromium).
+      // Applied only to pre-compiled .js/.mjs in node_modules and project source.
+      babel({
+        babelConfig: {
+          babelrc: false,
+          configFile: false,
+          parserOpts: {
+            plugins: ["jsx"],
+          },
+          plugins: [
+            "@babel/plugin-transform-optional-chaining",
+            "@babel/plugin-transform-nullish-coalescing-operator",
+            "@babel/plugin-transform-logical-assignment-operators",
+          ],
+        },
+        // Only process already-compiled JS files (not raw .ts/.tsx which Vite handles via oxc)
+        filter: /\.(js|mjs|cjs)$/,
+      }),
+    ],
     build: {
-      // Target ES2018 for broader browser compatibility (WebOS/LG TV, older Chromium).
-      // Note: @vitejs/plugin-legacy is incompatible with this project's Nitro+Rolldown bundler.
-      // The primary WebOS fix is converting oklch() colors to hsl() in styles.css.
       target: "es2018",
     },
   },
